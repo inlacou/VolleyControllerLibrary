@@ -304,9 +304,9 @@ public class VolleyController {
 					Log.v(DEBUG_TAG + "."+metodo+".onResponseError", "Detectado un error 400, refresh-token posiblemente caducado.");
 					try{
 						JSONObject jsonObject = new JSONObject(getMessage(volleyError));
-						if(jsonObject.toString().contains("Invalid refresh token")){
+						if(logicCallbacks.getRefreshTokenInvalidMessage()!=null && !logicCallbacks.getRefreshTokenInvalidMessage().isEmpty() && jsonObject.toString().contains(logicCallbacks.getRefreshTokenInvalidMessage())){
 							logicCallbacks.onRefreshTokenInvalid();
-						}if(jsonObject.toString().contains("Refresh token has expired")){
+						}if(logicCallbacks.getRefreshTokenExpiredMessage()!=null && !logicCallbacks.getRefreshTokenExpiredMessage().isEmpty() && jsonObject.toString().contains(logicCallbacks.getRefreshTokenExpiredMessage())){
 							logicCallbacks.onRefreshTokenExpired();
 						}
 					}catch (JSONException jsone){

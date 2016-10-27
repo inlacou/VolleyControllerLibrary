@@ -44,9 +44,9 @@ It also checks for `refreshToken` invalid or expired message, in which case it d
 
 Library asks you for the messages to check this states. For `authToken`, it also checks for these messages by default:
 
-`The access token provided has expired`
-`The access token provided is invalid`
-`UnauthorizedError: jwt expired`
+`The access token provided has expired`\n
+`The access token provided is invalid`\n
+`UnauthorizedError: jwt expired`\n
 
 Example call:
 

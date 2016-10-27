@@ -40,6 +40,14 @@ Initialize the library on your Application class:
 
 This calls allow the library to listen for authToken expiration and handle it's refresh. If you make several calls at once and all file because the authToken has expired, `LogicCallbacks.doRefreshToken(IOCallbacks ioCallbacks)` will be called and then all these calls will be remade with the new authToken.
 
+It also checks for `refreshToken` invalid or expired message, in which case it does not save and resume calls. It hands you a callback so you can, for example, close user session.
+
+Library asks you for the messages to check this states. For `authToken`, it also checks for these messages by default:
+
+`The access token provided has expired`
+`The access token provided is invalid`
+`UnauthorizedError: jwt expired`
+
 Example call:
 
 ```java

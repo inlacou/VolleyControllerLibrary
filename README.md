@@ -54,9 +54,11 @@ public static void doPutUserData(String name, String lastname,
         map.put("birthdate", birthdate+"");
         map.put("userSex", userSex+"");
         map.put("pc", pc+"");
-
+	
         NetworkLogic.getInstance().doPut(baseUrl + "/api/users/me?access_token=" + SharedPreferencesManager.getAuthToken(), map, code, callback);
     }
 ```
+
+Maybe you are confused by the `code` param. It's just for easier debugging, you can use empty Strings without problem.
 
 There you go!

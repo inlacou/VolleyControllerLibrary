@@ -14,11 +14,11 @@ public class InternetCall {
 	private static final String DEBUG_TAG = "InternetCall";
 	private Request request;
 	private String code;
-	private NetworkLogic.IOCallbacks callback;
+	private VolleyController.IOCallbacks callback;
 	private Map<String, String> map;
 	private Context context;
 
-	public InternetCall(Request request, String code, NetworkLogic.IOCallbacks callback, Map<String, String> map) {
+	public InternetCall(Request request, String code, VolleyController.IOCallbacks callback, Map<String, String> map) {
 		setRequest(request);
 		setCode(code);
 		setCallback(callback);
@@ -33,7 +33,7 @@ public class InternetCall {
 		return map;
 	}
 
-	public InternetCall(Request request, String code, NetworkLogic.IOCallbacks callback, Context context) {
+	public InternetCall(Request request, String code, VolleyController.IOCallbacks callback, Context context) {
 		setRequest(request);
 		setCode(code);
 		setCallback(callback);
@@ -48,11 +48,11 @@ public class InternetCall {
 		this.request = request;
 	}
 
-	public NetworkLogic.IOCallbacks getCallback() {
+	public VolleyController.IOCallbacks getCallback() {
 		return callback;
 	}
 
-	public void setCallback(NetworkLogic.IOCallbacks callback) {
+	public void setCallback(VolleyController.IOCallbacks callback) {
 		this.callback = callback;
 	}
 

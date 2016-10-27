@@ -29,23 +29,23 @@ import java.util.Map;
 /**
  * Created by inlacou on 25/11/14.
  */
-public class NetworkLogic {
+public class VolleyController {
 
 	private static final String JSON_POST_UPDATE_ACCESS_TOKEN = "network_logic_json_post_update_access_token";
-	private static final String DEBUG_TAG = NetworkLogic.class.getName();
+	private static final String DEBUG_TAG = VolleyController.class.getName();
 
 	private static ArrayList<InternetCall> temporaryCallQueue = new ArrayList<InternetCall>();
     private static boolean updatingToken = false;
-	private static NetworkLogic ourInstance = new NetworkLogic();
+	private static VolleyController ourInstance = new VolleyController();
 	private RequestQueue mRequestQueue, mSecondaryRequestQueue;
 	private LogicCallbacks logicCallbacks;
 	private String errorMessage;
 
-	public static NetworkLogic getInstance() {
+	public static VolleyController getInstance() {
 		return ourInstance;
 	}
 
-	private NetworkLogic() {
+	private VolleyController() {
 	}
 
 	public void init(Application application, LogicCallbacks logicCallbacks){
@@ -254,7 +254,7 @@ public class NetworkLogic {
 							new Response.Listener<JSONObject>() {
 								@Override
 								public void onResponse(JSONObject jsonObject) {
-									NetworkLogic.this.onResponse(jsonObject, iCall.getCallback(), iCall.getCode(), metodo);
+									VolleyController.this.onResponse(jsonObject, iCall.getCallback(), iCall.getCode(), metodo);
 								}
 							}, new Response.ErrorListener() {
 						@Override
@@ -294,11 +294,23 @@ public class NetworkLogic {
 				if(volleyError.networkResponse.statusCode==401 &&
                         (new String(volleyError.networkResponse.data, "UTF-8").contains("The access token provided has expired.")
 								|| new String(volleyError.networkResponse.data, "UTF-8").contains("The access token provided is invalid.")
-								|| new String(volleyError.networkResponse.data, "UTF-8").contains("UnauthorizedError: jwt expired"))
+								|| new String(volleyError.networkResponse.data, "UTF-8").contains("UnauthorizedError: jwt expired")
+								|| new String(volleyError.networkResponse.data, "UTF-8").contains(logicCallbacks.getAuthTokenExpiredMessage()))
                         ) {
 					Log.d(DEBUG_TAG + "."+metodo+".onResponseError", "Detectado un error 401, token caducado.");
                     retry(code, IOCallbacks);
                     return;
+				}if(volleyError.networkResponse.statusCode==400) {
+					Log.v(DEBUG_TAG + "."+metodo+".onResponseError", "Detectado un error 400, refresh-token posiblemente caducado.");
+					try{
+						JSONObject jsonObject = new JSONObject(getMessage(volleyError));
+						if(jsonObject.toString().contains("Invalid refresh token")){
+							logicCallbacks.onRefreshTokenInvalid();
+						}if(jsonObject.toString().contains("Refresh token has expired")){
+							logicCallbacks.onRefreshTokenExpired();
+						}
+					}catch (JSONException jsone){
+					}
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -334,7 +346,7 @@ public class NetworkLogic {
 				{
 					@Override
 					public void onResponse(String response) {
-						NetworkLogic.this.onResponse(response, IOCallbacks, code, Request.Method.POST);
+						VolleyController.this.onResponse(response, IOCallbacks, code, Request.Method.POST);
 					}
 				},
 				new Response.ErrorListener()
@@ -375,7 +387,7 @@ public class NetworkLogic {
 				{
 					@Override
 					public void onResponse(String response) {
-						NetworkLogic.this.onResponse(response, IOCallbacks, code, Request.Method.DELETE);
+						VolleyController.this.onResponse(response, IOCallbacks, code, Request.Method.DELETE);
 					}
 				},
 				new Response.ErrorListener()
@@ -406,7 +418,7 @@ public class NetworkLogic {
 				{
 					@Override
 					public void onResponse(String response) {
-						NetworkLogic.this.onResponse(response, IOCallbacks, code, Request.Method.DELETE);
+						VolleyController.this.onResponse(response, IOCallbacks, code, Request.Method.DELETE);
 					}
 				},
 				new Response.ErrorListener()
@@ -442,7 +454,7 @@ public class NetworkLogic {
 				{
 					@Override
 					public void onResponse(String response) {
-						NetworkLogic.this.onResponse(response, IOCallbacks, code, Request.Method.PUT);
+						VolleyController.this.onResponse(response, IOCallbacks, code, Request.Method.PUT);
 					}
 				},
 				new Response.ErrorListener()
@@ -479,7 +491,7 @@ public class NetworkLogic {
 				{
 					@Override
 					public void onResponse(String response) {
-						NetworkLogic.this.onResponse(response, IOCallbacks, code, Request.Method.GET);
+						VolleyController.this.onResponse(response, IOCallbacks, code, Request.Method.GET);
 					}
 				},
 				new Response.ErrorListener()
@@ -519,7 +531,7 @@ public class NetworkLogic {
 				new Response.Listener<JSONObject>(){
 					@Override
 					public void onResponse(JSONObject jsonObject) {
-						NetworkLogic.this.onResponse(jsonObject, IOCallbacks, code, Request.Method.GET);
+						VolleyController.this.onResponse(jsonObject, IOCallbacks, code, Request.Method.GET);
 					}
 				},
 				new Response.ErrorListener() {
@@ -566,7 +578,7 @@ public class NetworkLogic {
 				{
 					@Override
 					public void onResponse(String response) {
-						NetworkLogic.this.onResponse(response, IOCallbacks, code, Request.Method.POST);
+						VolleyController.this.onResponse(response, IOCallbacks, code, Request.Method.POST);
 					}
 				},
 				new Response.ErrorListener()
@@ -618,7 +630,7 @@ public class NetworkLogic {
 				{
 					@Override
 					public void onResponse(String response) {
-						NetworkLogic.this.onResponse(response, IOCallbacks, code, Request.Method.POST);
+						VolleyController.this.onResponse(response, IOCallbacks, code, Request.Method.POST);
 					}
 				},
 				new Response.ErrorListener()
@@ -660,7 +672,7 @@ public class NetworkLogic {
 				{
 					@Override
 					public void onResponse(String response) {
-						NetworkLogic.this.onResponse(response, IOCallbacks, code, Request.Method.DELETE);
+						VolleyController.this.onResponse(response, IOCallbacks, code, Request.Method.DELETE);
 					}
 				},
 				new Response.ErrorListener()
@@ -706,7 +718,7 @@ public class NetworkLogic {
 				{
 					@Override
 					public void onResponse(String response) {
-						NetworkLogic.this.onResponse(response, IOCallbacks, code, Request.Method.DELETE);
+						VolleyController.this.onResponse(response, IOCallbacks, code, Request.Method.DELETE);
 					}
 				},
 				new Response.ErrorListener()
@@ -748,7 +760,7 @@ public class NetworkLogic {
 				{
 					@Override
 					public void onResponse(String response) {
-						NetworkLogic.this.onResponse(response, IOCallbacks, code, Request.Method.POST);
+						VolleyController.this.onResponse(response, IOCallbacks, code, Request.Method.POST);
 					}
 				},
 				new Response.ErrorListener()
@@ -795,6 +807,11 @@ public class NetworkLogic {
 		String getRefreshToken();
 		String getAuthToken();
 		void doRefreshToken(IOCallbacks ioCallbacks);
+		void onRefreshTokenInvalid();
+		void onRefreshTokenExpired();
+		String getRefreshTokenInvalidMessage();
+		String getRefreshTokenExpiredMessage();
+		String getAuthTokenExpiredMessage();
 	}
 
 	public enum ContentType {

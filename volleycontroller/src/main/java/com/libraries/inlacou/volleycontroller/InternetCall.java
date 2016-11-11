@@ -1,9 +1,8 @@
 package com.libraries.inlacou.volleycontroller;
 
-import android.content.Context;
-
 import com.android.volley.Request;
 
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -11,40 +10,62 @@ import java.util.Map;
  */
 public class InternetCall {
 
-	private static final String DEBUG_TAG = "InternetCall";
+	private static final String DEBUG_TAG = InternetCall.class.getName();
 	private Request request;
 	private String code;
 	private VolleyController.IOCallbacks callback;
-	private Map<String, String> map;
-	private Context context;
+	private String url;
+	private Map<String, String> params;
+	private Map<String, String> headers;
+	private String rawBody;
 
-	public InternetCall(Request request, String code, VolleyController.IOCallbacks callback, Map<String, String> map) {
+	public InternetCall(Request request, String code, VolleyController.IOCallbacks callback, String url, Map<String, String> headers, Map<String, String> params, String rawBody) {
+		setUrl(url);
 		setRequest(request);
 		setCode(code);
 		setCallback(callback);
-		setMap(map);
+		setParams(params);
+		setHeaders(headers);
+		setRawBody(rawBody);
 	}
 
-	public void setMap(Map<String, String> map) {
-		this.map = map;
+	public String getUrl() {
+		return url;
 	}
 
-	public Map getMap(){
-		return map;
+	public void setUrl(String url) {
+		this.url = url;
 	}
 
-	public InternetCall(Request request, String code, VolleyController.IOCallbacks callback, Context context) {
-		setRequest(request);
-		setCode(code);
-		setCallback(callback);
-		setContext(context);
+	public String getRawBody() {
+		return rawBody;
+	}
+
+	public void setRawBody(String rawBody) {
+		this.rawBody = rawBody;
+	}
+
+	public void setHeaders(Map<String, String> headers) {
+		this.headers = headers;
+	}
+
+	public Map<String, String> getHeaders() {
+		return headers;
+	}
+
+	public void setParams(Map<String, String> params) {
+		this.params = params;
+	}
+
+	public Map getParams(){
+		return params;
 	}
 
 	public Request getRequest() {
 		return request;
 	}
 
-	public void setRequest(Request request) {
+	private void setRequest(Request request) {
 		this.request = request;
 	}
 
@@ -52,7 +73,7 @@ public class InternetCall {
 		return callback;
 	}
 
-	public void setCallback(VolleyController.IOCallbacks callback) {
+	private void setCallback(VolleyController.IOCallbacks callback) {
 		this.callback = callback;
 	}
 
@@ -60,29 +81,40 @@ public class InternetCall {
 		return code;
 	}
 
-	public void setCode(String code) {
+	private void setCode(String code) {
 		this.code = code;
 	}
 
-	public Context getContext() {
-		return context;
-	}
+	public String replaceAccessToken(String oldAccessToken, String newAccessToken) {
+		if(url!=null){
+			setUrl(url.replace(oldAccessToken, newAccessToken));
+		}
 
-	public void setContext(Context context) {
-		this.context = context;
-	}
+		Iterator it;
+		if(headers!=null) {
+			it = headers.entrySet().iterator();
+			while (it.hasNext()) {
+				Map.Entry pair = (Map.Entry) it.next();
+				if(pair.getValue().toString().contains(oldAccessToken)){
+					headers.put(pair.getKey().toString(), pair.getValue().toString().replace(oldAccessToken, newAccessToken));
+				}
+			}
+		}
 
-    public static String replaceAccessToken(String url, String newAccessToken) {
-        String result = url;
-        if(url.contains("access_token=")) {
-            int pos1 = url.indexOf("access_token=") + "access_token=".length();
-            int pos2 = url.indexOf("&", url.indexOf("accessToken="));
-            try {
-                result = url.replace(url.substring(pos1, pos2), newAccessToken);
-            } catch (StringIndexOutOfBoundsException sioobe) {
-                result = url.replace(url.substring(pos1, url.length()), newAccessToken);
-            }
-        }
-        return result;
-    }
+		if(params!=null) {
+			it = params.entrySet().iterator();
+			while (it.hasNext()) {
+				Map.Entry pair = (Map.Entry) it.next();
+				if(pair.getValue().toString().contains(oldAccessToken)){
+					params.put(pair.getKey().toString(), pair.getValue().toString().replace(oldAccessToken, newAccessToken));
+				}
+			}
+		}
+
+		if(rawBody!=null) {
+			rawBody = rawBody.replace(oldAccessToken, newAccessToken);
+		}
+
+		return url;
+	}
 }

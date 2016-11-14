@@ -444,11 +444,10 @@ public class VolleyController {
 				return super.getHeaders();
 			}
 
-			@Override
+		    @Override
 			protected Map<String, String> getParams() {
 				if(params!=null){
-					Map<String, String> headers = params;
-					for (Map.Entry<String, String> entry : headers.entrySet())
+					for (Map.Entry<String, String> entry : params.entrySet())
 					{
 						Log.v(DEBUG_TAG + "." + "POST", "params -> " + entry.getKey() + ": " + entry.getValue());
 					}
@@ -459,7 +458,7 @@ public class VolleyController {
 
 			@Override
 			public byte[] getBody() throws AuthFailureError {
-				if(rawBody!=null) {
+				if(rawBody!=null && !rawBody.isEmpty()) {
 					Log.v(DEBUG_TAG + "." + "POST", "body -> " + rawBody);
 					return rawBody.getBytes();
 				}
@@ -527,7 +526,7 @@ public class VolleyController {
 
 			@Override
 			public byte[] getBody() throws AuthFailureError {
-				if(rawBody!=null) {
+				if(rawBody!=null && !rawBody.isEmpty()) {
 					Log.v(DEBUG_TAG + "." + "POST", "body -> " + rawBody);
 					return rawBody.getBytes();
 				}
@@ -597,7 +596,7 @@ public class VolleyController {
 
 			@Override
 			public byte[] getBody() throws AuthFailureError {
-				if(rawBody!=null) {
+				if(rawBody!=null && !rawBody.isEmpty()) {
 					Log.v(DEBUG_TAG + "." + "POST", "body -> " + rawBody);
 					return rawBody.getBytes();
 				}

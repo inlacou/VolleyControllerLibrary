@@ -1020,8 +1020,25 @@ public class VolleyController {
 	}*/
 
 	public interface IOCallbacks {
+		/**
+		 *
+		 * @param json
+		 * @param code
+		 */
 		void onResponse(JSONObject json, String code);
+
+		/**
+		 *
+		 * @param response
+		 * @param code
+		 */
 		void onResponse(String response, String code);
+
+		/**
+		 *
+		 * @param error
+		 * @param code
+		 */
 		void onResponseError(VolleyError error, String code);
 	}
 
@@ -1038,6 +1055,13 @@ public class VolleyController {
 	}
 
 	public interface Interceptor {
+		/**
+		 *
+		 * @param url
+		 * @param headers
+		 * @param params
+		 * @param rawBody
+		 */
 		void intercept(String url, Map<String, String> headers, Map<String, String> params, String rawBody);
 	}
 

@@ -276,14 +276,6 @@ public class VolleyController {
 					    return super.getBody();
 				    }
 
-				    @Override
-				    public String getBodyContentType() {
-					    if(iCall.getRawBody()!=null){
-						    Log.v(DEBUG_TAG + "." + metodo, "content-type -> " + ContentType.JSON.toString());
-						    return ContentType.JSON.toString();
-					    }
-					    return super.getBodyContentType();
-				    }
 			    } :
 			    new JsonObjectRequest(r.getMethod(), iCall.replaceAccessToken(oldAccessToken, accessToken), null,
 					    new Response.Listener<JSONObject>() {
@@ -332,14 +324,6 @@ public class VolleyController {
 					    return super.getBody();
 				    }
 
-				    @Override
-				    public String getBodyContentType() {
-					    if(iCall.getRawBody()!=null){
-						    Log.v(DEBUG_TAG + "." + metodo, "content-type -> " + ContentType.JSON.toString());
-						    return ContentType.JSON.toString();
-					    }
-					    return super.getBodyContentType();
-				    }
 			    });
     }
 
@@ -481,15 +465,6 @@ public class VolleyController {
 				}
 				return super.getBody();
 			}
-
-			@Override
-			public String getBodyContentType() {
-				if(rawBody!=null){
-					Log.v(DEBUG_TAG + "." + "POST", "content-type -> " + ContentType.JSON.toString());
-					return ContentType.JSON.toString();
-				}
-				return super.getBodyContentType();
-			}
         };
 		onCall(Request.Method.POST, url, code, postRequest, IOCallbacks, headers, params, rawBody, primaryRequestQueue);
 	}
@@ -559,14 +534,6 @@ public class VolleyController {
 				return super.getBody();
 			}
 
-			@Override
-			public String getBodyContentType() {
-				if(rawBody!=null){
-					Log.v(DEBUG_TAG + "." + "POST", "content-type -> " + ContentType.JSON.toString());
-					return ContentType.JSON.toString();
-				}
-				return super.getBodyContentType();
-			}
 		};
 		onCall(Request.Method.DELETE, url, code, request, IOCallbacks, headers, params, rawBody);
 	}
@@ -637,14 +604,6 @@ public class VolleyController {
 				return super.getBody();
 			}
 
-			@Override
-			public String getBodyContentType() {
-				if(rawBody!=null){
-					Log.v(DEBUG_TAG + "." + "POST", "content-type -> " + ContentType.JSON.toString());
-					return ContentType.JSON.toString();
-				}
-				return super.getBodyContentType();
-			}
 		};
 		onCall(Request.Method.PUT, url, code, request, IOCallbacks, headers, params, rawBody);
 	}

@@ -10,7 +10,7 @@ Initialize the library on your Application class:
 		super.onCreate();
 		
 		// initialize
-		NetworkLogic.getInstance().init(this, new NetworkLogic.LogicCallbacks() {
+		VolleyController.getInstance().init(this, new VolleyController.LogicCallbacks() {
 			@Override
 			public void setTokens(String authToken, String refreshToken) {
 				//Save authToken
@@ -30,7 +30,7 @@ Initialize the library on your Application class:
 			}
 
 			@Override
-			public void doRefreshToken(NetworkLogic.IOCallbacks ioCallbacks) {
+			public void doRefreshToken(VolleyController.IOCallbacks ioCallbacks) {
 				//make call to refresh token, for example:
 				UrlLogic.doPostRefreshToken(ioCallbacks);
 			}

@@ -142,6 +142,8 @@ public class VolleyController {
 		Log.d(DEBUG_TAG + ".onCall." + methodString, "Request para la " + (primaryRequestQueue ? "primera" : "segunda") + " requestQueue creada con codigo: " + code);
 		Log.d(DEBUG_TAG+".onCall."+methodString+"", "Making "+methodString+" call to url: " + url);
 		logMap(headers, "header", methodString);
+		logMap(params, "params", methodString);
+		Log.d(DEBUG_TAG+".onCall."+methodString+"", "Rawbody: "+rawBody);
 
 		request.setRetryPolicy(new DefaultRetryPolicy(10000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 

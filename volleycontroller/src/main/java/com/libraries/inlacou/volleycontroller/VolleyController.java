@@ -46,7 +46,8 @@ public class VolleyController {
 	private RequestQueue mRequestQueue, mSecondaryRequestQueue;
 	private LogicCallbacks logicCallbacks;
 	private String errorMessage;
-
+	private ArrayList<Interceptor> interceptors;
+	
 	public static VolleyController getInstance() {
 		return ourInstance;
 	}
@@ -58,6 +59,7 @@ public class VolleyController {
 		errorMessage = application.getString(R.string.network_error);
 		this.logicCallbacks = logicCallbacks;
 		this.context = application;
+		interceptors = new ArrayList<>();
 		if (mRequestQueue == null) {
 			//InputStream keystore = getResources().openRawResource(R.raw.boletus); //For SSH
 
@@ -72,6 +74,10 @@ public class VolleyController {
 					//, new ExtHttpClientStack(new SslHttpClient(keystore, "ss64kdn4", 443)) //For SSH
 			);
 		}
+	}
+
+	public void addInterceptor(Interceptor interceptor){
+		interceptors.add(interceptor);
 	}
 
 	public RequestQueue getRequestQueue(){
@@ -153,11 +159,11 @@ public class VolleyController {
         mRequestQueue.add(request);
 	}
 
-	private void logMap(Map<String, String> map, String header, String method) {
-		Log.d(DEBUG_TAG+".onCall."+method+"", "Map(" + header + ") = " + map);
+	private void logMap(Map<String, String> map, String type, String method) {
+		Log.d(DEBUG_TAG+".onCall."+method+"", "Map(" + type + ") = " + map);
 		if(map!=null) {
 			for (String s : map.keySet()) {
-				Log.d(DEBUG_TAG + ".onCall." + method + "", header + " parameter " + s + ": " + map.get(s));
+				Log.d(DEBUG_TAG + ".onCall." + method + "", type + " parameter " + s + ": " + map.get(s));
 			}
 		}
 	}
@@ -409,8 +415,11 @@ public class VolleyController {
         doPost(url, header, params, rawBody, code, IOCallbacks, true);
     }
 
-    public void doPost(final String url, final Map<String, String> headers, final Map<String, String> params, final String rawBody, final String code, final IOCallbacks IOCallbacks, boolean primaryRequestQueue){
-		StringRequest postRequest = new StringRequest(Request.Method.POST, url,
+    private void doPost(final String url, final Map<String, String> headers, final Map<String, String> params, final String rawBody, final String code, final IOCallbacks IOCallbacks, boolean primaryRequestQueue){
+	    for (int i=0; i<interceptors.size(); i++){
+		    interceptors.get(i).intercept(url, headers, params, rawBody);
+	    }
+	    StringRequest postRequest = new StringRequest(Request.Method.POST, url,
 				new Response.Listener<String>()
 				{
 					@Override
@@ -484,6 +493,9 @@ public class VolleyController {
 	}
 
 	public void doDelete(String url, final Map<String, String> headers, final Map<String, String> params, final String rawBody, final String code, final IOCallbacks IOCallbacks){
+		for (int i=0; i<interceptors.size(); i++){
+			interceptors.get(i).intercept(url, headers, params, rawBody);
+		}
 		StringRequest request = new StringRequest(Request.Method.DELETE, url,
 				new Response.Listener<String>()
 				{
@@ -558,6 +570,10 @@ public class VolleyController {
 	}
 
 	public void doPut(String url, final Map<String, String> headers, final Map<String, String> params, final String rawBody, final String code, final IOCallbacks IOCallbacks){
+		for (int i=0; i<interceptors.size(); i++){
+			interceptors.get(i).intercept(url, headers, params, rawBody);
+		}
+
 		StringRequest request = new StringRequest(Request.Method.PUT, url,
 				new Response.Listener<String>()
 				{
@@ -631,7 +647,12 @@ public class VolleyController {
 		onCall(Request.Method.PUT, url, code, request, IOCallbacks, headers, params, rawBody);
 	}
 
-	public void doGet(String url, final String code, final IOCallbacks IOCallbacks){
+	public void doGet(String url, final Map<String, String> headers, final String code, final IOCallbacks IOCallbacks){
+		logMap(headers, "headers pre", "get");
+		for (int i=0; i<interceptors.size(); i++){
+			interceptors.get(i).intercept(url, headers, null, null);
+		}
+		logMap(headers, "headers post", "get");
 		StringRequest request = new StringRequest(Request.Method.GET, url,
 				new Response.Listener<String>()
 				{
@@ -664,8 +685,16 @@ public class VolleyController {
 				Log.d(DEBUG_TAG, "getBodyContentType: " + super.getBodyContentType());
 				return super.getBodyContentType();
 			}
+
+			@Override
+			public Map<String, String> getHeaders() throws AuthFailureError {
+				if(headers!=null){
+					return headers;
+				}
+				return super.getHeaders();
+			}
 		};
-		onCall(Request.Method.GET, url, code, request, IOCallbacks, null, null, null);
+		onCall(Request.Method.GET, url, code, request, IOCallbacks, headers, null, null);
 	}
 
 	public void doJsonGet(final String url, final String code, final IOCallbacks IOCallbacks){
@@ -697,7 +726,10 @@ public class VolleyController {
 		onCall(Request.Method.GET, url, code, request, IOCallbacks, null, null, null, primaryRequestQueue);
 	}
 
-	public void doPostMultipart(final String url, final Map<String, String> params, final Bitmap bitmap, final String format, final String code, final IOCallbacks callbacks, boolean primaryRequestQueue){
+	public void doPostMultipart(final String url, Map<String, String> headers, final Map<String, String> params, final Bitmap bitmap, final String format, final String code, final IOCallbacks callbacks, boolean primaryRequestQueue){
+		for (int i=0; i<interceptors.size(); i++){
+			interceptors.get(i).intercept(url, headers, params, null);
+		}
 		VolleyMultipartRequest multipartRequest = new VolleyMultipartRequest(Request.Method.POST, url, new Response.Listener<NetworkResponse>() {
 			@Override
 			public void onResponse(NetworkResponse response) {
@@ -739,7 +771,7 @@ public class VolleyController {
 				return params;
 			}
 		};
-		onCall(Request.Method.POST, url, code, multipartRequest, callbacks, null, params, null, primaryRequestQueue);
+		onCall(Request.Method.POST, url, code, multipartRequest, callbacks, headers, params, null, primaryRequestQueue);
 	}
 
     public int getStatusCode(VolleyError error){
@@ -1003,6 +1035,10 @@ public class VolleyController {
 		String getRefreshTokenInvalidMessage();
 		String getRefreshTokenExpiredMessage();
 		String getAuthTokenExpiredMessage();
+	}
+
+	public interface Interceptor {
+		void intercept(String url, Map<String, String> headers, Map<String, String> params, String rawBody);
 	}
 
 	public enum ContentType {

@@ -207,7 +207,7 @@ public class VolleyController {
 				try {
 					JSONObject jsonObject = new JSONObject(response);
 					//Save new tokens
-					logicCallbacks.setTokens(jsonObject.getString("token"), jsonObject.getString("refresh_token"));
+					logicCallbacks.setTokens(jsonObject);
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
@@ -384,7 +384,7 @@ public class VolleyController {
 	}
 
 	public interface LogicCallbacks {
-		void setTokens(String authToken, String refreshToken);
+		void setTokens(JSONObject jsonObject);
 
 		String getRefreshToken();
 

@@ -7,6 +7,8 @@ import com.android.volley.VolleyError;
 import com.libraries.inlacou.volleycontroller.InternetCall;
 import com.libraries.inlacou.volleycontroller.VolleyController;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 /**
@@ -30,7 +32,7 @@ public class ApplicationController extends Application {
 		VolleyController.getInstance().init(this, new VolleyController.LogicCallbacks() {
 
 			@Override
-			public void setTokens(String authToken, String refreshToken) {
+			public void setTokens(JSONObject jsonObject) {
 			}
 
 			@Override

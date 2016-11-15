@@ -11,6 +11,7 @@ import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.StringRequest;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,13 +26,13 @@ public class InternetCall {
 	private static final String DEBUG_TAG = InternetCall.class.getName();
 	private Method method;
 	private String code;
-	private VolleyController.IOCallbacks callback;
 	private String url;
 	private Map<String, String> params;
 	private Map<String, String> headers;
 	private String rawBody;
 	private DefaultRetryPolicy retryPolicy;
 	private ArrayList<Interceptor> interceptors;
+	private ArrayList<VolleyController.IOCallbacks> callbacks;
 
 	public InternetCall() {
 		interceptors = new ArrayList<>();
@@ -78,12 +79,15 @@ public class InternetCall {
 		return params;
 	}
 
-	public VolleyController.IOCallbacks getCallback() {
-		return callback;
+	public ArrayList<VolleyController.IOCallbacks> getCallbacks() {
+		return callbacks;
 	}
 
-	public InternetCall setCallback(VolleyController.IOCallbacks callback) {
-		this.callback = callback;
+	public InternetCall addCallback(VolleyController.IOCallbacks callback) {
+		if(callbacks==null){
+			callbacks = new ArrayList<>();
+		}
+		this.callbacks.add(callback);
 		return this;
 	}
 

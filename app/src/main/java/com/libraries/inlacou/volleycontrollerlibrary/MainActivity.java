@@ -13,17 +13,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 import com.android.volley.VolleyError;
 import com.libraries.inlacou.volleycontroller.InternetCall;
 import com.libraries.inlacou.volleycontroller.VolleyController;
 
-import java.util.HashMap;
-
 public class MainActivity extends AppCompatActivity
 		implements NavigationView.OnNavigationItemSelectedListener {
 
 	private static final String DEBUG_TAG = MainActivity.class.getName();
+	private TextView textView;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -36,21 +36,6 @@ public class MainActivity extends AppCompatActivity
 		fab.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				VolleyController.getInstance().onCall(new InternetCall()
-						.setUrl("https://jsonplaceholder.typicode.com/posts")
-						.setMethod(InternetCall.Method.GET)
-						.setCode("code_get_posts")
-						.setCallback(new VolleyController.IOCallbacks() {
-							@Override
-							public void onResponse(String response, String code) {
-								Log.d(DEBUG_TAG, "Code: " + code + " | Response: " + response);
-							}
-
-							@Override
-							public void onResponseError(VolleyError error, String code) {
-								Log.d(DEBUG_TAG, "Code: " + code + " | Response: " + error);
-							}
-						}));
 				Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
 						.setAction("Action", null).show();
 			}
@@ -63,6 +48,8 @@ public class MainActivity extends AppCompatActivity
 
 		NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
 		navigationView.setNavigationItemSelectedListener(this);
+
+		textView = (TextView) findViewById(R.id.textView);
 	}
 
 	@Override
@@ -103,14 +90,86 @@ public class MainActivity extends AppCompatActivity
 		// Handle navigation view item clicks here.
 		int id = item.getItemId();
 
-		if (id == R.id.nav_camera) {
-			// Handle the camera action
-		} else if (id == R.id.nav_gallery) {
+		if (id == R.id.nav_GET) {
+			VolleyController.getInstance().onCall(new InternetCall()
+					.setUrl("https://jsonplaceholder.typicode.com/posts")
+					.setMethod(InternetCall.Method.GET)
+					.setCode("code_get_posts")
+					.addCallback(new VolleyController.IOCallbacks() {
+						@Override
+						public void onResponse(String response, String code) {
+							Log.d(DEBUG_TAG, "Code: " + code + " | Response: " + response);
+							textView.setText(response);
+						}
 
-		} else if (id == R.id.nav_slideshow) {
+						@Override
+						public void onResponseError(VolleyError error, String code) {
+							Log.d(DEBUG_TAG, "Code: " + code + " | Response: " + error);
+							textView.setText(VolleyController.getInstance().getMessage(error));
+						}
+					}));
+		} else if (id == R.id.nav_POST) {
+			VolleyController.getInstance().onCall(new InternetCall()
+					.setUrl("http://jsonplaceholder.typicode.com/posts")
+					.setMethod(InternetCall.Method.POST)
+					.putParam("title", "foo")
+					.putParam("body", "bar")
+					.putParam("userId", "1")
+					.setCode("code_create_posts")
+					.addCallback(new VolleyController.IOCallbacks() {
+						@Override
+						public void onResponse(String response, String code) {
+							Log.d(DEBUG_TAG, "Code: " + code + " | Response: " + response);
+							textView.setText(response);
+						}
 
-		} else if (id == R.id.nav_manage) {
+						@Override
+						public void onResponseError(VolleyError error, String code) {
+							Log.d(DEBUG_TAG, "Code: " + code + " | Response: " + error);
+							textView.setText(VolleyController.getInstance().getMessage(error));
+						}
+					}));
+		} else if (id == R.id.nav_PUT) {
+			VolleyController.getInstance().onCall(new InternetCall()
+					.setUrl("http://jsonplaceholder.typicode.com/posts/1")
+					.setMethod(InternetCall.Method.PUT)
+					.putParam("id", "1")
+					.putParam("title", "foo")
+					.putParam("body", "bar")
+					.putParam("userId", "1")
+					.setCode("code_modify_post")
+					.addCallback(new VolleyController.IOCallbacks() {
+						@Override
+						public void onResponse(String response, String code) {
+							Log.d(DEBUG_TAG, "Code: " + code + " | Response: " + response);
+							textView.setText(response);
+						}
 
+						@Override
+						public void onResponseError(VolleyError error, String code) {
+							Log.d(DEBUG_TAG, "Code: " + code + " | Response: " + error);
+							textView.setText(VolleyController.getInstance().getMessage(error));
+						}
+					}));
+		} else if (id == R.id.nav_DELETE) {
+
+			VolleyController.getInstance().onCall(new InternetCall()
+					.setUrl("http://jsonplaceholder.typicode.com/posts/1")
+					.setMethod(InternetCall.Method.DELETE)
+					.setCode("code_delete_post")
+					.addCallback(new VolleyController.IOCallbacks() {
+						@Override
+						public void onResponse(String response, String code) {
+							Log.d(DEBUG_TAG, "Code: " + code + " | Response: " + response);
+							textView.setText(response);
+						}
+
+						@Override
+						public void onResponseError(VolleyError error, String code) {
+							Log.d(DEBUG_TAG, "Code: " + code + " | Response: " + error);
+							textView.setText(VolleyController.getInstance().getMessage(error));
+						}
+					}));
 		} else if (id == R.id.nav_share) {
 
 		} else if (id == R.id.nav_send) {

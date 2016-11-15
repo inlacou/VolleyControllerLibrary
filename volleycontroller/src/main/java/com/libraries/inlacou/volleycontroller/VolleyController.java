@@ -162,12 +162,12 @@ public class VolleyController {
 		mRequestQueue.add(iCall.build(new Response.Listener<String>() {
 			@Override
 			public void onResponse(String s) {
-				VolleyController.this.onResponse(s, iCall.getCallback(), iCall.getCode(), iCall.getMethod());
+				VolleyController.this.onResponse(s, iCall.getCallbacks(), iCall.getCode(), iCall.getMethod());
 			}
 		}, new Response.ErrorListener() {
 			@Override
 			public void onErrorResponse(VolleyError volleyError) {
-				VolleyController.this.onResponseError(volleyError, iCall.getCallback(), iCall.getCode(), iCall.getMethod().toString());
+				VolleyController.this.onResponseError(volleyError, iCall.getCallbacks(), iCall.getCode(), iCall.getMethod().toString());
 			}
 		}));
 	}
@@ -181,21 +181,23 @@ public class VolleyController {
 		}
 	}
 
-	private void onResponseFinal(String response, IOCallbacks IOCallbacks, String code, InternetCall.Method method){
+	private void onResponseFinal(String response, ArrayList<IOCallbacks> ioCallbacks, String code, InternetCall.Method method){
 		Log.d(DEBUG_TAG+"."+method+".onStringResponse", "Code: " + code);
 		Log.d(DEBUG_TAG + "." + method + ".onStringResponse", "Method: " + method);
 		Log.d(DEBUG_TAG + "." + method + ".onStringResponse", "Response: " + response);
-		if(IOCallbacks !=null) {
-			IOCallbacks.onResponse(response, code);
+		if(ioCallbacks!=null) {
+			for (int i=0; i<ioCallbacks.size(); i++){
+				if(ioCallbacks.get(i)!=null) ioCallbacks.get(i).onResponse(response, code);
+			}
 			removeFromTemporaryList(code);
 		}
 	}
 
-	private void onResponse(String response, IOCallbacks IOCallbacks, String code, InternetCall.Method method){
+	private void onResponse(String response, ArrayList<IOCallbacks> ioCallbacks, String code, InternetCall.Method method){
 		Log.d(DEBUG_TAG+"."+method+".onStringResponse", "Code: " + code);
 		Log.d(DEBUG_TAG+"."+method+".onStringResponse", "StatusCode: " + code);
 		Log.d(DEBUG_TAG + "." + method + ".onStringResponse", "Response: " + response);
-		if(IOCallbacks !=null) {
+		if(ioCallbacks!=null) {
 			if(code.equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN)){
 				Log.d(DEBUG_TAG+"."+method+".onJsonResponse", "Recibida la respuesta al codigo " + JSON_POST_UPDATE_ACCESS_TOKEN +
 						", updating tokens. | " + response);
@@ -219,7 +221,7 @@ public class VolleyController {
 				updatingToken=false;
 				getRequestQueue().start();
 			} else {
-				onResponseFinal(response, IOCallbacks, code, method);
+				onResponseFinal(response, ioCallbacks, code, method);
 			}
 		}
 	}
@@ -230,36 +232,17 @@ public class VolleyController {
 				.build(new Response.Listener<String>() {
 					@Override
 					public void onResponse(String s) {
-						VolleyController.this.onResponseFinal(s, iCall.getCallback(), iCall.getCode(), iCall.getMethod());
+						VolleyController.this.onResponseFinal(s, iCall.getCallbacks(), iCall.getCode(), iCall.getMethod());
 					}
 				}, new Response.ErrorListener() {
 					@Override
 					public void onErrorResponse(VolleyError volleyError) {
-						VolleyController.this.onResponseError(volleyError, iCall.getCallback(), iCall.getCode(), metodo);
+						VolleyController.this.onResponseError(volleyError, iCall.getCallbacks(), iCall.getCode(), metodo);
 					}
 				}));
 	}
 
-	/*private void onResponse(JSONObject jsonObject, IOCallbacks IOCallbacks, String code, int method){
-		final String metodo = methodToString(method);
-        onResponse(jsonObject, IOCallbacks, code, metodo);
-	}
-
-	private void onResponse(JSONObject jsonObject, IOCallbacks IOCallbacks, String code, String metodo){
-		Log.d(DEBUG_TAG+"."+metodo+".onJsonResponse", "Code: " + code);
-		Log.d(DEBUG_TAG + "." + metodo + ".onJSONResponse", "Response: " + jsonObject.toString());
-        if(IOCallbacks !=null) {
-            IOCallbacks.onResponse(jsonObject, code);
-            removeFromTemporaryList(code);
-        }
-	}*/
-
-	private void onResponseError(VolleyError volleyError, IOCallbacks IOCallbacks, String code, int method){
-		String metodo = methodToString(method);
-		onResponseError(volleyError, IOCallbacks, code, metodo);
-	}
-
-	private void onResponseError(VolleyError volleyError, IOCallbacks IOCallbacks, String code, String metodo){
+	private void onResponseError(VolleyError volleyError, ArrayList<IOCallbacks> ioCallbacks, String code, String metodo){
 		if(volleyError.networkResponse!=null){
 			Log.d(DEBUG_TAG+"."+metodo+".onResponseError", "StatusCode: "+volleyError.networkResponse.statusCode);
 			try {
@@ -272,7 +255,7 @@ public class VolleyController {
 								|| new String(volleyError.networkResponse.data, "UTF-8").contains(logicCallbacks.getAuthTokenExpiredMessage()))
 						) {
 					Log.d(DEBUG_TAG + "."+metodo+".onResponseError", "Detectado un error 401, token caducado.");
-					retry(code, IOCallbacks);
+					retry(code, ioCallbacks);
 					return;
 				}if(volleyError.networkResponse.statusCode==400) {
 					Log.v(DEBUG_TAG + "."+metodo+".onResponseError", "Detectado un error 400, refresh-token posiblemente caducado.");
@@ -293,10 +276,14 @@ public class VolleyController {
 		}else{
 			Log.d(DEBUG_TAG+"."+metodo+".onResponseError", "networkResponse==null");
 		}
-		if(IOCallbacks !=null) IOCallbacks.onResponseError(volleyError, code);
+		if(ioCallbacks !=null) {
+			for (int i=0; i<ioCallbacks.size(); i++){
+				if(ioCallbacks.get(i)!=null) ioCallbacks.get(i).onResponseError(volleyError, code);
+			}
+		}
 	}
 
-	private void retry(String code, IOCallbacks IOCallbacks) throws Exception {
+	private void retry(String code, ArrayList<IOCallbacks> ioCallbacks) throws Exception {
 		Log.d(DEBUG_TAG + ".retry", "En retry, desde una llamada con codigo: " + code + ".");
 		Log.d(DEBUG_TAG + ".retry", "Estamos ya refrescando el token? " + (updatingToken ? "Si." : "No."));
 
@@ -306,7 +293,7 @@ public class VolleyController {
 			updatingToken=true;
 			Log.d(DEBUG_TAG + ".retry", "Paramos la request queue principal");
 			mRequestQueue.stop();
-			logicCallbacks.doRefreshToken(IOCallbacks);
+			logicCallbacks.doRefreshToken(ioCallbacks);
 		}
 	}
 
@@ -403,7 +390,7 @@ public class VolleyController {
 
 		String getAuthToken();
 
-		void doRefreshToken(IOCallbacks ioCallbacks);
+		void doRefreshToken(ArrayList<IOCallbacks> ioCallbacks);
 
 		void onRefreshTokenInvalid();
 

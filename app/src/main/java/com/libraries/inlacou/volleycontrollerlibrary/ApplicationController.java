@@ -1,9 +1,13 @@
 package com.libraries.inlacou.volleycontrollerlibrary;
 
 import android.app.Application;
+import android.widget.Toast;
 
+import com.android.volley.VolleyError;
 import com.libraries.inlacou.volleycontroller.InternetCall;
 import com.libraries.inlacou.volleycontroller.VolleyController;
+
+import java.util.ArrayList;
 
 /**
  * Created by inlacou on 14/11/16.
@@ -27,7 +31,6 @@ public class ApplicationController extends Application {
 
 			@Override
 			public void setTokens(String authToken, String refreshToken) {
-
 			}
 
 			@Override
@@ -41,7 +44,7 @@ public class ApplicationController extends Application {
 			}
 
 			@Override
-			public void doRefreshToken(VolleyController.IOCallbacks ioCallbacks) {
+			public void doRefreshToken(ArrayList<VolleyController.IOCallbacks> ioCallbacks) {
 
 			}
 
@@ -75,7 +78,22 @@ public class ApplicationController extends Application {
 			public void intercept(InternetCall internetCall) {
 				internetCall
 						.putHeader("deviceId", "5")
-						.putParam("alwaysParam", "Hey! :D");
+						.putParam("alwaysParam", "Hey! :D")
+						.addCallback(new VolleyController.IOCallbacks() {
+							@Override
+							public void onResponse(String response, String code) {
+								try {
+									Toast.makeText(ApplicationController.this, response.substring(0, 20) + "...", Toast.LENGTH_SHORT).show();
+								}catch (IndexOutOfBoundsException ioobe){
+									Toast.makeText(ApplicationController.this, response.substring(0, response.length()), Toast.LENGTH_SHORT).show();
+								}
+							}
+							
+							@Override
+							public void onResponseError(VolleyError error, String code) {
+								
+							}
+						});
 			}
 		});
 	}

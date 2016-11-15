@@ -1,6 +1,5 @@
 package com.libraries.inlacou.volleycontroller;
 
-import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.android.volley.AuthFailureError;
@@ -8,11 +7,12 @@ import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.StringRequest;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -31,8 +31,12 @@ public class InternetCall {
 	private Map<String, String> headers;
 	private String rawBody;
 	private DefaultRetryPolicy retryPolicy;
+	private ArrayList<Interceptor> interceptors;
 
 	public InternetCall() {
+		interceptors = new ArrayList<>();
+		params = new HashMap<>();
+		headers = new HashMap<>();
 		method = Method.GET;
 		setRetryPolicy(new DefaultRetryPolicy(10000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 	}
@@ -65,6 +69,7 @@ public class InternetCall {
 	}
 
 	public InternetCall setParams(Map<String, String> params) {
+		rawBody = null;
 		this.params = params;
 		return this;
 	}
@@ -134,6 +139,9 @@ public class InternetCall {
 	}
 
 	public StringRequest build(Response.Listener<String> listener, Response.ErrorListener errorListener) {
+		for(int i=0; i<interceptors.size(); i++){
+			interceptors.get(i).intercept(this);
+		}
 		return new StringRequest(this.getMethod().value(), getUrl(), listener, errorListener){
 			@Override
 			protected Response<String> parseNetworkResponse(NetworkResponse response) {
@@ -148,11 +156,11 @@ public class InternetCall {
 
 			@Override
 			public Map<String, String> getHeaders() throws AuthFailureError {
-				if(getHeaders()!=null){
-					Map<String, String> headers = getHeaders();
+				if(InternetCall.this.getHeaders()!=null){
+					Map<String, String> headers = InternetCall.this.getHeaders();
 					for (Map.Entry<String, String> entry : headers.entrySet())
 					{
-						Log.v(DEBUG_TAG + "." + getMethod(), "header -> " + entry.getKey() + ": " + entry.getValue());
+						Log.v(DEBUG_TAG + "." + InternetCall.this.getMethod(), "header -> " + entry.getKey() + ": " + entry.getValue());
 					}
 					return InternetCall.this.headers;
 				}
@@ -161,11 +169,11 @@ public class InternetCall {
 
 			@Override
 			protected Map<String, String> getParams() {
-				if(getParams()!=null){
-					Map<String, String> headers = getParams();
+				if(InternetCall.this.getParams()!=null){
+					Map<String, String> headers = InternetCall.this.getParams();
 					for (Map.Entry<String, String> entry : headers.entrySet())
 					{
-						Log.v(DEBUG_TAG + "." + getMethod(), "params -> " + entry.getKey() + ": " + entry.getValue());
+						Log.v(DEBUG_TAG + "." + InternetCall.this.getMethod(), "params -> " + entry.getKey() + ": " + entry.getValue());
 					}
 					return InternetCall.this.getParams();
 				}
@@ -179,8 +187,8 @@ public class InternetCall {
 
 			@Override
 			public byte[] getBody() throws AuthFailureError {
-				if(getRawBody()!=null) {
-					Log.v(DEBUG_TAG + "." + getMethod(), "body -> " + getRawBody());
+				if(InternetCall.this.getRawBody()!=null && !InternetCall.this.getRawBody().isEmpty()) {
+					Log.v(DEBUG_TAG + "." + InternetCall.this.getMethod(), "body -> " + InternetCall.this.getRawBody());
 					return InternetCall.this.getRawBody().getBytes();
 				}
 				return super.getBody();
@@ -191,6 +199,43 @@ public class InternetCall {
 
 	public InternetCall setRetryPolicy(DefaultRetryPolicy retryPolicy) {
 		this.retryPolicy = retryPolicy;
+		return this;
+	}
+
+	public InternetCall setInterceptors(final ArrayList<Interceptor> interceptors){
+		this.interceptors = interceptors;
+		return this;
+	}
+
+	public InternetCall addInterceptors(final ArrayList<Interceptor> interceptors) {
+		if(this.interceptors==null){
+			this.interceptors = new ArrayList<>();
+		}
+		this.interceptors = new ArrayList<Interceptor>(){{ addAll(interceptors); addAll(InternetCall.this.interceptors); }};
+		return this;
+	}
+
+	public InternetCall addInterceptor(Interceptor interceptor){
+		if(this.interceptors==null){
+			this.interceptors = new ArrayList<>();
+		}
+		this.interceptors.add(interceptor);
+		return this;
+	}
+
+	public InternetCall putHeader(String key, String value) {
+		if(headers==null){
+			headers = new HashMap<>();
+		}
+		headers.put(key, value);
+		return this;
+	}
+
+	public InternetCall putParam(String key, String value) {
+		if(params==null){
+			params = new HashMap<>();
+		}
+		params.put(key, value);
 		return this;
 	}
 
@@ -226,5 +271,14 @@ public class InternetCall {
 					return "(default)GET";
 			}
 		}
+	}
+
+	public interface Interceptor {
+		/**
+		 *
+		 * @param internetCall
+		 * @return modified internetCall
+		 */
+		void intercept(InternetCall internetCall);
 	}
 }

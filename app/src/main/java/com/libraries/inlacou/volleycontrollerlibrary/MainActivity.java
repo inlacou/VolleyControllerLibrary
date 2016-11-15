@@ -3,6 +3,7 @@ package com.libraries.inlacou.volleycontrollerlibrary;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -13,12 +14,16 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.android.volley.VolleyError;
+import com.libraries.inlacou.volleycontroller.InternetCall;
 import com.libraries.inlacou.volleycontroller.VolleyController;
 
 import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity
 		implements NavigationView.OnNavigationItemSelectedListener {
+
+	private static final String DEBUG_TAG = MainActivity.class.getName();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -31,7 +36,21 @@ public class MainActivity extends AppCompatActivity
 		fab.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				VolleyController.getInstance().doGet("http://www.google.com", new HashMap<String, String>(), "code", null);
+				VolleyController.getInstance().onCall(new InternetCall()
+						.setUrl("https://jsonplaceholder.typicode.com/posts")
+						.setMethod(InternetCall.Method.GET)
+						.setCode("code_get_posts")
+						.setCallback(new VolleyController.IOCallbacks() {
+							@Override
+							public void onResponse(String response, String code) {
+								Log.d(DEBUG_TAG, "Code: " + code + " | Response: " + response);
+							}
+
+							@Override
+							public void onResponseError(VolleyError error, String code) {
+								Log.d(DEBUG_TAG, "Code: " + code + " | Response: " + error);
+							}
+						}));
 				Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
 						.setAction("Action", null).show();
 			}

@@ -40,14 +40,14 @@ public class VolleyController {
 	private static final String DEBUG_TAG = VolleyController.class.getName();
 
 	private static ArrayList<InternetCall> temporaryCallQueue = new ArrayList<InternetCall>();
-    private static boolean updatingToken = false;
+	private static boolean updatingToken = false;
 	private static VolleyController ourInstance = new VolleyController();
 	private Context context;
 	private RequestQueue mRequestQueue, mSecondaryRequestQueue;
 	private LogicCallbacks logicCallbacks;
 	private String errorMessage;
-	private ArrayList<Interceptor> interceptors;
-	
+	private ArrayList<InternetCall.Interceptor> interceptors;
+
 	public static VolleyController getInstance() {
 		return ourInstance;
 	}
@@ -76,7 +76,11 @@ public class VolleyController {
 		}
 	}
 
-	public void addInterceptor(Interceptor interceptor){
+	/**
+	 *
+	 * @param interceptor
+	 */
+	public void addInterceptor(InternetCall.Interceptor interceptor){
 		interceptors.add(interceptor);
 	}
 
@@ -122,21 +126,22 @@ public class VolleyController {
 		}
 	}
 
-    private void removeFromTemporaryList(String code){
-        int i = temporaryCallQueue.size();
-        for (int c = 0; c<i; c++){
-            if(temporaryCallQueue.get(c).getCode().equalsIgnoreCase(code)){
-                temporaryCallQueue.remove(c);
-                return;
-            }
-        }
-    }
+	private void removeFromTemporaryList(String code){
+		int i = temporaryCallQueue.size();
+		for (int c = 0; c<i; c++){
+			if(temporaryCallQueue.get(c).getCode().equalsIgnoreCase(code)){
+				temporaryCallQueue.remove(c);
+				return;
+			}
+		}
+	}
 
-	private void onCall(final InternetCall iCall){
+	public void onCall(final InternetCall iCall){
 		onCall(iCall, false);
 	}
 
 	private void onCall(final InternetCall iCall, boolean primaryRequestQueue){
+		iCall.addInterceptors(interceptors);
 		Log.d(DEBUG_TAG + ".onCall." + iCall.getMethod(), "Request para la " + (primaryRequestQueue ? "primera" : "segunda") + " requestQueue creada con codigo: " + iCall.getCode());
 		Log.d(DEBUG_TAG+".onCall."+iCall.getMethod()+"", "Making "+iCall.getMethod()+" call to url: " + iCall.getUrl());
 		logMap(iCall.getHeaders(), "header", iCall.getMethod().toString());
@@ -157,49 +162,14 @@ public class VolleyController {
 		mRequestQueue.add(iCall.build(new Response.Listener<String>() {
 			@Override
 			public void onResponse(String s) {
-				onResponseFinal(s, iCall.getCallback(), iCall.getCode(), iCall.getMethod().toString());
+				VolleyController.this.onResponse(s, iCall.getCallback(), iCall.getCode(), iCall.getMethod());
 			}
 		}, new Response.ErrorListener() {
 			@Override
 			public void onErrorResponse(VolleyError volleyError) {
-				onResponseError(volleyError, iCall.getCallback(), iCall.getCode(), iCall.getMethod().toString());
+				VolleyController.this.onResponseError(volleyError, iCall.getCallback(), iCall.getCode(), iCall.getMethod().toString());
 			}
 		}));
-	}
-
-	private void onCall(int method, String url, String code, Request request, IOCallbacks IOCallbacks, Map<String, String> headers, Map<String, String> params, String rawBody){
-		onCall(method, url, code, request, IOCallbacks, headers, params, rawBody, true);
-	}
-
-	private void onCall(int method, String url, String code, Request request, IOCallbacks IOCallbacks, Map<String, String> headers, Map<String, String> params, String rawBody, boolean primaryRequestQueue){
-		String methodString = methodToString(method);
-
-		Log.d(DEBUG_TAG + ".onCall." + methodString, "Request para la " + (primaryRequestQueue ? "primera" : "segunda") + " requestQueue creada con codigo: " + code);
-		Log.d(DEBUG_TAG+".onCall."+methodString+"", "Making "+methodString+" call to url: " + url);
-		logMap(headers, "header", methodString);
-		logMap(params, "params", methodString);
-		Log.d(DEBUG_TAG+".onCall."+methodString+"", "Rawbody: "+rawBody);
-
-		request.setRetryPolicy(new DefaultRetryPolicy(10000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-        RequestQueue mRequestQueue;
-        if(primaryRequestQueue) {
-            Log.d(DEBUG_TAG, "primaryRequestQueue");
-            mRequestQueue = getRequestQueue();
-        }else{
-            Log.d(DEBUG_TAG, "secondaryRequestQueue");
-            mRequestQueue = this.getSecondaryRequestQueue();
-        }
-        if(!code.equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN)) {
-            temporaryCallQueue.add(new InternetCall()
-		            .setCode(code)
-		            .setUrl(url)
-		            .setHeaders(headers)
-		            .setParams(params)
-		            .setRawBody(rawBody)
-		            .setCallback(IOCallbacks));
-        }
-        mRequestQueue.add(request);
 	}
 
 	private void logMap(Map<String, String> map, String type, String method) {
@@ -211,67 +181,66 @@ public class VolleyController {
 		}
 	}
 
-	private void onResponseFinal(String response, IOCallbacks IOCallbacks, String code, String metodo){
-		Log.d(DEBUG_TAG+"."+metodo+".onStringResponse", "Code: " + code);
-		Log.d(DEBUG_TAG + "." + metodo + ".onStringResponse", "Method: " + metodo);
-		Log.d(DEBUG_TAG + "." + metodo + ".onStringResponse", "Response: " + response);
+	private void onResponseFinal(String response, IOCallbacks IOCallbacks, String code, InternetCall.Method method){
+		Log.d(DEBUG_TAG+"."+method+".onStringResponse", "Code: " + code);
+		Log.d(DEBUG_TAG + "." + method + ".onStringResponse", "Method: " + method);
+		Log.d(DEBUG_TAG + "." + method + ".onStringResponse", "Response: " + response);
 		if(IOCallbacks !=null) {
-            IOCallbacks.onResponse(response, code);
-            removeFromTemporaryList(code);
-        }
+			IOCallbacks.onResponse(response, code);
+			removeFromTemporaryList(code);
+		}
 	}
 
-	private void onResponse(String response, IOCallbacks IOCallbacks, String code, int method){
-		String metodo = methodToString(method);
-		Log.d(DEBUG_TAG+"."+metodo+".onStringResponse", "Code: " + code);
-		Log.d(DEBUG_TAG+"."+metodo+".onStringResponse", "StatusCode: " + code);
-		Log.d(DEBUG_TAG + "." + metodo + ".onStringResponse", "Response: " + response);
+	private void onResponse(String response, IOCallbacks IOCallbacks, String code, InternetCall.Method method){
+		Log.d(DEBUG_TAG+"."+method+".onStringResponse", "Code: " + code);
+		Log.d(DEBUG_TAG+"."+method+".onStringResponse", "StatusCode: " + code);
+		Log.d(DEBUG_TAG + "." + method + ".onStringResponse", "Response: " + response);
 		if(IOCallbacks !=null) {
-            if(code.equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN)){
-                Log.d(DEBUG_TAG+"."+metodo+".onJsonResponse", "Recibida la respuesta al codigo " + JSON_POST_UPDATE_ACCESS_TOKEN +
-                        ", updating tokens. | " + response);
-	            //Save old authToken
-	            String oldAccessToken = logicCallbacks.getAuthToken();
-                //Read answer
-                try {
-                    JSONObject jsonObject = new JSONObject(response);
-	                //Save new tokens
-	                logicCallbacks.setTokens(jsonObject.getString("token"), jsonObject.getString("refresh_token"));
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                //Get new authToken
-                String accessToken = logicCallbacks.getAuthToken();
-                Log.d(DEBUG_TAG+"."+metodo+".onJsonResponse", "Continuando llamadas almacenadas. Numero: " + temporaryCallQueue.size());
+			if(code.equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN)){
+				Log.d(DEBUG_TAG+"."+method+".onJsonResponse", "Recibida la respuesta al codigo " + JSON_POST_UPDATE_ACCESS_TOKEN +
+						", updating tokens. | " + response);
+				//Save old authToken
+				String oldAccessToken = logicCallbacks.getAuthToken();
+				//Read answer
+				try {
+					JSONObject jsonObject = new JSONObject(response);
+					//Save new tokens
+					logicCallbacks.setTokens(jsonObject.getString("token"), jsonObject.getString("refresh_token"));
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+				//Get new authToken
+				String accessToken = logicCallbacks.getAuthToken();
+				Log.d(DEBUG_TAG+"."+method+".onJsonResponse", "Continuando llamadas almacenadas. Numero: " + temporaryCallQueue.size());
 
-                for(int i = 0; i<temporaryCallQueue.size(); i++){
-                    doCall(temporaryCallQueue.get(i), oldAccessToken, accessToken, metodo);
-                }
-                updatingToken=false;
-                getRequestQueue().start();
-            } else {
-				onResponseFinal(response, IOCallbacks, code, metodo);
-            }
-        }
+				for(int i = 0; i<temporaryCallQueue.size(); i++){
+					doCall(temporaryCallQueue.get(i), oldAccessToken, accessToken, method.toString());
+				}
+				updatingToken=false;
+				getRequestQueue().start();
+			} else {
+				onResponseFinal(response, IOCallbacks, code, method);
+			}
+		}
 	}
 
-    private void doCall(final InternetCall iCall, String oldAccessToken, String accessToken, final String metodo){
-        RequestQueue rq = getRequestQueue();
-	    rq.add(iCall.replaceAccessToken(oldAccessToken, accessToken)
-	    .build(new Response.Listener<String>() {
-		    @Override
-		    public void onResponse(String s) {
-			    onResponseFinal(s, iCall.getCallback(), iCall.getCode(), metodo);
-		    }
-	    }, new Response.ErrorListener() {
-		    @Override
-		    public void onErrorResponse(VolleyError volleyError) {
-			    onResponseError(volleyError, iCall.getCallback(), iCall.getCode(), metodo);
-		    }
-	    }));
-    }
+	private void doCall(final InternetCall iCall, String oldAccessToken, String accessToken, final String metodo){
+		RequestQueue rq = getRequestQueue();
+		rq.add(iCall.replaceAccessToken(oldAccessToken, accessToken)
+				.build(new Response.Listener<String>() {
+					@Override
+					public void onResponse(String s) {
+						VolleyController.this.onResponseFinal(s, iCall.getCallback(), iCall.getCode(), iCall.getMethod());
+					}
+				}, new Response.ErrorListener() {
+					@Override
+					public void onErrorResponse(VolleyError volleyError) {
+						VolleyController.this.onResponseError(volleyError, iCall.getCallback(), iCall.getCode(), metodo);
+					}
+				}));
+	}
 
-	private void onResponse(JSONObject jsonObject, IOCallbacks IOCallbacks, String code, int method){
+	/*private void onResponse(JSONObject jsonObject, IOCallbacks IOCallbacks, String code, int method){
 		final String metodo = methodToString(method);
         onResponse(jsonObject, IOCallbacks, code, metodo);
 	}
@@ -283,7 +252,7 @@ public class VolleyController {
             IOCallbacks.onResponse(jsonObject, code);
             removeFromTemporaryList(code);
         }
-	}
+	}*/
 
 	private void onResponseError(VolleyError volleyError, IOCallbacks IOCallbacks, String code, int method){
 		String metodo = methodToString(method);
@@ -297,14 +266,14 @@ public class VolleyController {
 				Log.d(DEBUG_TAG + "."+metodo+".onResponseError", "Message: " + new String(volleyError.networkResponse.data, "UTF-8"));
 				Log.d(DEBUG_TAG + "."+metodo+".onResponseError", "StatusCode: " + volleyError.networkResponse.statusCode);
 				if(volleyError.networkResponse.statusCode==401 &&
-                        (new String(volleyError.networkResponse.data, "UTF-8").contains("The access token provided has expired.")
+						(new String(volleyError.networkResponse.data, "UTF-8").contains("The access token provided has expired.")
 								|| new String(volleyError.networkResponse.data, "UTF-8").contains("The access token provided is invalid.")
 								|| new String(volleyError.networkResponse.data, "UTF-8").contains("UnauthorizedError: jwt expired")
 								|| new String(volleyError.networkResponse.data, "UTF-8").contains(logicCallbacks.getAuthTokenExpiredMessage()))
-                        ) {
+						) {
 					Log.d(DEBUG_TAG + "."+metodo+".onResponseError", "Detectado un error 401, token caducado.");
-                    retry(code, IOCallbacks);
-                    return;
+					retry(code, IOCallbacks);
+					return;
 				}if(volleyError.networkResponse.statusCode==400) {
 					Log.v(DEBUG_TAG + "."+metodo+".onResponseError", "Detectado un error 400, refresh-token posiblemente caducado.");
 					try{
@@ -327,310 +296,22 @@ public class VolleyController {
 		if(IOCallbacks !=null) IOCallbacks.onResponseError(volleyError, code);
 	}
 
-    private void retry(String code, IOCallbacks IOCallbacks) throws Exception {
-        Log.d(DEBUG_TAG + ".retry", "En retry, desde una llamada con codigo: " + code + ".");
-        Log.d(DEBUG_TAG + ".retry", "Estamos ya refrescando el token? " + (updatingToken ? "Si." : "No."));
+	private void retry(String code, IOCallbacks IOCallbacks) throws Exception {
+		Log.d(DEBUG_TAG + ".retry", "En retry, desde una llamada con codigo: " + code + ".");
+		Log.d(DEBUG_TAG + ".retry", "Estamos ya refrescando el token? " + (updatingToken ? "Si." : "No."));
 
-        RequestQueue mRequestQueue = getRequestQueue();
+		RequestQueue mRequestQueue = getRequestQueue();
 
-        if(!updatingToken) {
-            updatingToken=true;
-            Log.d(DEBUG_TAG + ".retry", "Paramos la request queue principal");
-            mRequestQueue.stop();
-            logicCallbacks.doRefreshToken(IOCallbacks);
-        }
-    }
-
-	public void doPost(final String url, final Map<String, String> header, final Map<String, String> params, final String rawBody, final String code, final IOCallbacks IOCallbacks) {
-        doPost(url, header, params, rawBody, code, IOCallbacks, true);
-    }
-
-    private void doPost(final String url, final Map<String, String> headers, final Map<String, String> params, final String rawBody, final String code, final IOCallbacks IOCallbacks, boolean primaryRequestQueue){
-	    for (int i=0; i<interceptors.size(); i++){
-		    interceptors.get(i).intercept(url, headers, params, rawBody);
-	    }
-	    StringRequest postRequest = new StringRequest(Request.Method.POST, url,
-				new Response.Listener<String>()
-				{
-					@Override
-					public void onResponse(String response) {
-						VolleyController.this.onResponse(response, IOCallbacks, code, Request.Method.POST);
-					}
-				},
-				new Response.ErrorListener()
-				{
-					@Override
-					public void onErrorResponse(VolleyError volleyError) {
-						onResponseError(volleyError, IOCallbacks, code, Request.Method.POST);
-					}
-				}
-		) {
-			@Override
-			protected Response<String> parseNetworkResponse(NetworkResponse response) {
-				try {
-					String utf8String = new String(response.data, "UTF-8");
-					return Response.success(utf8String, HttpHeaderParser.parseCacheHeaders(response));
-				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
-				}
-				return super.parseNetworkResponse(response);
-			}
-
-			@Override
-			public Map<String, String> getHeaders() throws AuthFailureError {
-				if(headers!=null){
-					for (Map.Entry<String, String> entry : headers.entrySet())
-					{
-						Log.v(DEBUG_TAG + "." + "POST", "header -> " + entry.getKey() + ": " + entry.getValue());
-					}
-					return headers;
-				}
-				return super.getHeaders();
-			}
-
-		    @Override
-			protected Map<String, String> getParams() {
-				if(params!=null){
-					for (Map.Entry<String, String> entry : params.entrySet())
-					{
-						Log.v(DEBUG_TAG + "." + "POST", "params -> " + entry.getKey() + ": " + entry.getValue());
-					}
-					return params;
-				}
-				return getParams();
-			}
-
-			@Override
-			public byte[] getBody() throws AuthFailureError {
-				if(rawBody!=null && !rawBody.isEmpty()) {
-					Log.v(DEBUG_TAG + "." + "POST", "body -> " + rawBody);
-					return rawBody.getBytes();
-				}
-				return super.getBody();
-			}
-        };
-		onCall(Request.Method.POST, url, code, postRequest, IOCallbacks, headers, params, rawBody, primaryRequestQueue);
-	}
-
-	public void doDelete(String url, final Map<String, String> headers, final Map<String, String> params, final String rawBody, final String code, final IOCallbacks IOCallbacks){
-		for (int i=0; i<interceptors.size(); i++){
-			interceptors.get(i).intercept(url, headers, params, rawBody);
+		if(!updatingToken) {
+			updatingToken=true;
+			Log.d(DEBUG_TAG + ".retry", "Paramos la request queue principal");
+			mRequestQueue.stop();
+			logicCallbacks.doRefreshToken(IOCallbacks);
 		}
-		StringRequest request = new StringRequest(Request.Method.DELETE, url,
-				new Response.Listener<String>()
-				{
-					@Override
-					public void onResponse(String response) {
-						VolleyController.this.onResponse(response, IOCallbacks, code, Request.Method.DELETE);
-					}
-				},
-				new Response.ErrorListener()
-				{
-					@Override
-					public void onErrorResponse(VolleyError volleyError) {
-						onResponseError(volleyError, IOCallbacks, code, Request.Method.DELETE);
-					}
-				}
-		){
-			@Override
-			protected Response<String> parseNetworkResponse(NetworkResponse response) {
-				try {
-					String utf8String = new String(response.data, "UTF-8");
-					return Response.success(utf8String, HttpHeaderParser.parseCacheHeaders(response));
-				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
-				}
-				return super.parseNetworkResponse(response);
-			}
-
-			@Override
-			public Map<String, String> getHeaders() throws AuthFailureError {
-				if(headers!=null){
-					for (Map.Entry<String, String> entry : headers.entrySet())
-					{
-						Log.v(DEBUG_TAG + "." + "POST", "header -> " + entry.getKey() + ": " + entry.getValue());
-					}
-					return headers;
-				}
-				return super.getHeaders();
-			}
-
-			@Override
-			protected Map<String, String> getParams() {
-				if(params!=null){
-					Map<String, String> headers = params;
-					for (Map.Entry<String, String> entry : headers.entrySet())
-					{
-						Log.v(DEBUG_TAG + "." + "POST", "params -> " + entry.getKey() + ": " + entry.getValue());
-					}
-					return params;
-				}
-				return getParams();
-			}
-
-			@Override
-			public byte[] getBody() throws AuthFailureError {
-				if(rawBody!=null && !rawBody.isEmpty()) {
-					Log.v(DEBUG_TAG + "." + "POST", "body -> " + rawBody);
-					return rawBody.getBytes();
-				}
-				return super.getBody();
-			}
-
-		};
-		onCall(Request.Method.DELETE, url, code, request, IOCallbacks, headers, params, rawBody);
 	}
 
-	public void doPut(String url, final Map<String, String> headers, final Map<String, String> params, final String rawBody, final String code, final IOCallbacks IOCallbacks){
-		for (int i=0; i<interceptors.size(); i++){
-			interceptors.get(i).intercept(url, headers, params, rawBody);
-		}
-
-		StringRequest request = new StringRequest(Request.Method.PUT, url,
-				new Response.Listener<String>()
-				{
-					@Override
-					public void onResponse(String response) {
-						VolleyController.this.onResponse(response, IOCallbacks, code, Request.Method.PUT);
-					}
-				},
-				new Response.ErrorListener()
-				{
-					@Override
-					public void onErrorResponse(VolleyError volleyError) {
-						onResponseError(volleyError, IOCallbacks, code, Request.Method.PUT);
-					}
-				}
-		) {
-			@Override
-			protected Response<String> parseNetworkResponse(NetworkResponse response) {
-				try {
-					String utf8String = new String(response.data, "UTF-8");
-					return Response.success(utf8String, HttpHeaderParser.parseCacheHeaders(response));
-				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
-				}
-				return super.parseNetworkResponse(response);
-			}
-
-			@Override
-			public Map<String, String> getHeaders() throws AuthFailureError {
-				if(headers!=null){
-					for (Map.Entry<String, String> entry : headers.entrySet())
-					{
-						Log.v(DEBUG_TAG + "." + "POST", "header -> " + entry.getKey() + ": " + entry.getValue());
-					}
-					return headers;
-				}
-				return super.getHeaders();
-			}
-
-			@Override
-			protected Map<String, String> getParams() {
-				if(params!=null){
-					Map<String, String> headers = params;
-					for (Map.Entry<String, String> entry : headers.entrySet())
-					{
-						Log.v(DEBUG_TAG + "." + "POST", "params -> " + entry.getKey() + ": " + entry.getValue());
-					}
-					return params;
-				}
-				return getParams();
-			}
-
-			@Override
-			public byte[] getBody() throws AuthFailureError {
-				if(rawBody!=null && !rawBody.isEmpty()) {
-					Log.v(DEBUG_TAG + "." + "POST", "body -> " + rawBody);
-					return rawBody.getBytes();
-				}
-				return super.getBody();
-			}
-
-		};
-		onCall(Request.Method.PUT, url, code, request, IOCallbacks, headers, params, rawBody);
-	}
-
-	public void doGet(String url, final Map<String, String> headers, final String code, final IOCallbacks IOCallbacks){
-		logMap(headers, "headers pre", "get");
-		for (int i=0; i<interceptors.size(); i++){
-			interceptors.get(i).intercept(url, headers, null, null);
-		}
-		logMap(headers, "headers post", "get");
-		StringRequest request = new StringRequest(Request.Method.GET, url,
-				new Response.Listener<String>()
-				{
-					@Override
-					public void onResponse(String response) {
-						VolleyController.this.onResponse(response, IOCallbacks, code, Request.Method.GET);
-					}
-				},
-				new Response.ErrorListener()
-				{
-					@Override
-					public void onErrorResponse(VolleyError volleyError) {
-						onResponseError(volleyError, IOCallbacks, code, Request.Method.GET);
-					}
-				}
-		){
-			@Override
-			protected Response<String> parseNetworkResponse(NetworkResponse response) {
-				try {
-					String utf8String = new String(response.data, "UTF-8");
-					return Response.success(utf8String, HttpHeaderParser.parseCacheHeaders(response));
-				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
-				}
-				return super.parseNetworkResponse(response);
-			}
-
-			@Override
-			public String getBodyContentType() {
-				Log.d(DEBUG_TAG, "getBodyContentType: " + super.getBodyContentType());
-				return super.getBodyContentType();
-			}
-
-			@Override
-			public Map<String, String> getHeaders() throws AuthFailureError {
-				if(headers!=null){
-					return headers;
-				}
-				return super.getHeaders();
-			}
-		};
-		onCall(Request.Method.GET, url, code, request, IOCallbacks, headers, null, null);
-	}
-
-	public void doJsonGet(final String url, final String code, final IOCallbacks IOCallbacks){
-		doJsonGet(url, code, IOCallbacks, true);
-	}
-
-	public void doJsonGet(final String url, final String code, final IOCallbacks IOCallbacks, boolean primaryRequestQueue){
-		JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
-				new Response.Listener<JSONObject>(){
-					@Override
-					public void onResponse(JSONObject jsonObject) {
-						VolleyController.this.onResponse(jsonObject, IOCallbacks, code, Request.Method.GET);
-					}
-				},
-				new Response.ErrorListener() {
-					@Override
-					public void onErrorResponse(VolleyError volleyError) {
-						onResponseError(volleyError, IOCallbacks, code, Request.Method.GET);
-					}
-				}
-		){
-			@Override
-			public String getBodyContentType() {
-				Log.d(DEBUG_TAG, "getBodyContentType: " + super.getBodyContentType());
-				return super.getBodyContentType();
-			}
-		};
-
-		onCall(Request.Method.GET, url, code, request, IOCallbacks, null, null, null, primaryRequestQueue);
-	}
-
-	public void doPostMultipart(final String url, Map<String, String> headers, final Map<String, String> params, final Bitmap bitmap, final String format, final String code, final IOCallbacks callbacks, boolean primaryRequestQueue){
+	//TODO multipart
+	/*public void doPostMultipart(final String url, Map<String, String> headers, final Map<String, String> params, final Bitmap bitmap, final String format, final String code, final IOCallbacks callbacks, boolean primaryRequestQueue){
 		for (int i=0; i<interceptors.size(); i++){
 			interceptors.get(i).intercept(url, headers, params, null);
 		}
@@ -676,261 +357,30 @@ public class VolleyController {
 			}
 		};
 		onCall(Request.Method.POST, url, code, multipartRequest, callbacks, headers, params, null, primaryRequestQueue);
+	}*/
+
+	public int getStatusCode(VolleyError error){
+		try {
+			return error.networkResponse.statusCode;
+		} catch (NullPointerException e) {
+			e.printStackTrace();
+			return -1;
+		}
 	}
 
-    public int getStatusCode(VolleyError error){
-        try {
-            return error.networkResponse.statusCode;
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-            return -1;
-        }
-    }
-
-    public String getMessage(VolleyError error){
-        try {
-            return new String(error.networkResponse.data, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-            return errorMessage;
-        } catch (NullPointerException npe){
+	public String getMessage(VolleyError error){
+		try {
+			return new String(error.networkResponse.data, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			return errorMessage;
+		} catch (NullPointerException npe){
 			npe.printStackTrace();
 			return errorMessage;
 		}
-    }
-
-	/*public void doPost(String url, final ContentType contentType, final String rawBody, final Map<String, String> headers, final String code, final IOCallbacks IOCallbacks){
-		StringRequest request = new StringRequest(Request.Method.POST, url,
-				new Response.Listener<String>()
-				{
-					@Override
-					public void onResponse(String response) {
-						VolleyController.this.onResponse(response, IOCallbacks, code, Request.Method.POST);
-					}
-				},
-				new Response.ErrorListener()
-				{
-					@Override
-					public void onErrorResponse(VolleyError volleyError) {
-						onResponseError(volleyError, IOCallbacks, code, Request.Method.POST);
-					}
-				}
-		) {
-			@Override
-			protected Response<String> parseNetworkResponse(NetworkResponse response) {
-				try {
-					String utf8String = new String(response.data, "UTF-8");
-					return Response.success(utf8String, HttpHeaderParser.parseCacheHeaders(response));
-				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
-				}
-				return super.parseNetworkResponse(response);
-			}
-
-			@Override
-			public String getBodyContentType() {
-				return contentType.toString();
-			}
-
-			@Override
-			public Map<String, String> getHeaders() throws AuthFailureError {
-				Map<String, String> map = headers;
-				for (Map.Entry<String, String> entry : map.entrySet())
-				{
-					Log.d(DEBUG_TAG + ".doPost", "header -> " + entry.getKey() + ": " + entry.getValue());
-				}
-				return headers;
-			}
-
-			@Override
-			public byte[] getBody() throws AuthFailureError {
-				Log.d(DEBUG_TAG + ".doPost", "body -> " + rawBody);
-				return rawBody.getBytes();
-			}
-		};
-		onCall(Request.Method.POST, url, code, IOCallbacks, request, null);
 	}
-
-	public void doPost(final String url, final ContentType contentType, final String raw, final String code, final IOCallbacks IOCallbacks){
-		StringRequest postRequest = new StringRequest(Request.Method.POST, url,
-				new Response.Listener<String>()
-				{
-					@Override
-					public void onResponse(String response) {
-						VolleyController.this.onResponse(response, IOCallbacks, code, Request.Method.POST);
-					}
-				},
-				new Response.ErrorListener()
-				{
-					@Override
-					public void onErrorResponse(VolleyError volleyError) {
-						onResponseError(volleyError, IOCallbacks, code, Request.Method.POST);
-					}
-				}
-		) {
-			@Override
-			protected Response<String> parseNetworkResponse(NetworkResponse response) {
-				try {
-					String utf8String = new String(response.data, "UTF-8");
-					return Response.success(utf8String, HttpHeaderParser.parseCacheHeaders(response));
-				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
-				}
-				return super.parseNetworkResponse(response);
-			}
-
-			@Override
-			public String getBodyContentType()
-			{
-				return contentType.toString();
-			}
-
-			@Override
-			public byte[] getBody() throws AuthFailureError {
-				return raw.getBytes();
-			}
-		};
-		onCall(Request.Method.POST, url, code, IOCallbacks, postRequest, null);
-	}*/
-
-	/*public void doDeleteRawJSON(String url, final ContentType contentType, final String raw, final Map<String, String> headers, final String code, final IOCallbacks IOCallbacks){
-		StringRequest request = new StringRequest(Request.Method.DELETE, url,
-				new Response.Listener<String>()
-				{
-					@Override
-					public void onResponse(String response) {
-						VolleyController.this.onResponse(response, IOCallbacks, code, Request.Method.DELETE);
-					}
-				},
-				new Response.ErrorListener()
-				{
-					@Override
-					public void onErrorResponse(VolleyError volleyError) {
-						onResponseError(volleyError, IOCallbacks, code, Request.Method.DELETE);
-					}
-				}
-		) {
-			@Override
-			protected Response<String> parseNetworkResponse(NetworkResponse response) {
-				try {
-					String utf8String = new String(response.data, "UTF-8");
-					return Response.success(utf8String, HttpHeaderParser.parseCacheHeaders(response));
-				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
-				}
-				return super.parseNetworkResponse(response);
-			}
-
-			@Override
-			public String getBodyContentType() {
-				return contentType.toString();
-			}
-
-			@Override
-			public Map<String, String> getHeaders() throws AuthFailureError {
-				return headers;
-			}
-
-			@Override
-			public byte[] getBody() throws AuthFailureError {
-				return raw.getBytes();
-			}
-		};
-		onCall(Request.Method.DELETE, url, code, IOCallbacks, request, null);
-	}
-
-	public void doDeleteRawXml(final String url, final ContentType contentType, final String raw, final String code, final IOCallbacks IOCallbacks){
-		StringRequest postRequest = new StringRequest(Request.Method.DELETE, url,
-				new Response.Listener<String>()
-				{
-					@Override
-					public void onResponse(String response) {
-						VolleyController.this.onResponse(response, IOCallbacks, code, Request.Method.DELETE);
-					}
-				},
-				new Response.ErrorListener()
-				{
-					@Override
-					public void onErrorResponse(VolleyError volleyError) {
-						onResponseError(volleyError, IOCallbacks, code, Request.Method.DELETE);
-					}
-				}
-		) {
-			@Override
-			protected Response<String> parseNetworkResponse(NetworkResponse response) {
-				try {
-					String utf8String = new String(response.data, "UTF-8");
-					return Response.success(utf8String, HttpHeaderParser.parseCacheHeaders(response));
-				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
-				}
-				return super.parseNetworkResponse(response);
-			}
-
-			@Override
-			public String getBodyContentType()
-			{
-				return contentType.toString();
-			}
-
-			@Override
-			public byte[] getBody() throws AuthFailureError {
-				return raw.getBytes();
-			}
-		};
-		onCall(Request.Method.DELETE, url, code, IOCallbacks, postRequest, null);
-	}
-
-	public void doPutRawXml(final String url, final ContentType contentType, final String raw, final String code, final IOCallbacks IOCallbacks){
-		StringRequest putRequest = new StringRequest(Request.Method.PUT, url,
-				new Response.Listener<String>()
-				{
-					@Override
-					public void onResponse(String response) {
-						VolleyController.this.onResponse(response, IOCallbacks, code, Request.Method.POST);
-					}
-				},
-				new Response.ErrorListener()
-				{
-					@Override
-					public void onErrorResponse(VolleyError volleyError) {
-						onResponseError(volleyError, IOCallbacks, code, Request.Method.POST);
-					}
-				}
-		) {
-			@Override
-			protected Response<String> parseNetworkResponse(NetworkResponse response) {
-				try {
-					String utf8String = new String(response.data, "UTF-8");
-					return Response.success(utf8String, HttpHeaderParser.parseCacheHeaders(response));
-				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
-				}
-				return super.parseNetworkResponse(response);
-			}
-
-			@Override
-			public String getBodyContentType()
-			{
-				return contentType.toString();
-			}
-
-			@Override
-			public byte[] getBody() throws AuthFailureError {
-				return raw.getBytes();
-			}
-		};
-		onCall(Request.Method.PUT, url, code, IOCallbacks, putRequest, null);
-	}*/
 
 	public interface IOCallbacks {
-		/**
-		 *
-		 * @param json
-		 * @param code
-		 */
-		void onResponse(JSONObject json, String code);
-
 		/**
 		 *
 		 * @param response
@@ -948,58 +398,55 @@ public class VolleyController {
 
 	public interface LogicCallbacks {
 		void setTokens(String authToken, String refreshToken);
+
 		String getRefreshToken();
+
 		String getAuthToken();
+
 		void doRefreshToken(IOCallbacks ioCallbacks);
+
 		void onRefreshTokenInvalid();
+
 		void onRefreshTokenExpired();
+
 		String getRefreshTokenInvalidMessage();
+
 		String getRefreshTokenExpiredMessage();
+
 		String getAuthTokenExpiredMessage();
 	}
 
-	public interface Interceptor {
-		/**
-		 *
-		 * @param url
-		 * @param headers
-		 * @param params
-		 * @param rawBody
-		 */
-		void intercept(String url, Map<String, String> headers, Map<String, String> params, String rawBody);
-	}
 
 	public enum ContentType {
 		TEXT, TEXT_PLAIN, JSON, JAVASCRIPT, XML_APPLICATION, XML_TEXT, HTML;
 
-		public String toString(){
-			switch (this){
-				case TEXT:{
+		public String toString() {
+			switch (this) {
+				case TEXT: {
 					return "text";
 				}
-				case TEXT_PLAIN:{
+				case TEXT_PLAIN: {
 					return "text/plain";
 				}
-				case JSON:{
+				case JSON: {
 					return "application/json";
 				}
-				case JAVASCRIPT:{
+				case JAVASCRIPT: {
 					return "application/javascript";
 				}
-				case XML_APPLICATION:{
+				case XML_APPLICATION: {
 					return "application/xml";
 				}
-				case XML_TEXT:{
+				case XML_TEXT: {
 					return "text/xml";
 				}
-				case HTML:{
+				case HTML: {
 					return "text/html";
 				}
-				default:{
+				default: {
 					return "";
 				}
 			}
 		}
 	}
-
 }

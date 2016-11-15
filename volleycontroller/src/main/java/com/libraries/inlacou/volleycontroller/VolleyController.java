@@ -36,7 +36,7 @@ import java.util.Map;
  */
 public class VolleyController {
 
-	private static final String JSON_POST_UPDATE_ACCESS_TOKEN = "network_logic_json_post_update_access_token";
+	public static final String JSON_POST_UPDATE_ACCESS_TOKEN = "network_logic_json_post_update_access_token";
 	private static final String DEBUG_TAG = VolleyController.class.getName();
 
 	private static ArrayList<InternetCall> temporaryCallQueue = new ArrayList<InternetCall>();
@@ -252,7 +252,7 @@ public class VolleyController {
 						(new String(volleyError.networkResponse.data, "UTF-8").contains("The access token provided has expired.")
 								|| new String(volleyError.networkResponse.data, "UTF-8").contains("The access token provided is invalid.")
 								|| new String(volleyError.networkResponse.data, "UTF-8").contains("UnauthorizedError: jwt expired")
-								|| new String(volleyError.networkResponse.data, "UTF-8").contains(logicCallbacks.getAuthTokenExpiredMessage()))
+								|| (logicCallbacks.getAuthTokenExpiredMessage()!=null && !logicCallbacks.getAuthTokenExpiredMessage().isEmpty() && new String(volleyError.networkResponse.data, "UTF-8").contains(logicCallbacks.getAuthTokenExpiredMessage())))
 						) {
 					Log.d(DEBUG_TAG + "."+metodo+".onResponseError", "Detectado un error 401, token caducado.");
 					retry(code, ioCallbacks);

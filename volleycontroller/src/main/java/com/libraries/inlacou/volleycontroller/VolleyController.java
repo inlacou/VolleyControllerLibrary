@@ -132,6 +132,41 @@ public class VolleyController {
         }
     }
 
+	private void onCall(final InternetCall iCall){
+		onCall(iCall, false);
+	}
+
+	private void onCall(final InternetCall iCall, boolean primaryRequestQueue){
+		Log.d(DEBUG_TAG + ".onCall." + iCall.getMethod(), "Request para la " + (primaryRequestQueue ? "primera" : "segunda") + " requestQueue creada con codigo: " + iCall.getCode());
+		Log.d(DEBUG_TAG+".onCall."+iCall.getMethod()+"", "Making "+iCall.getMethod()+" call to url: " + iCall.getUrl());
+		logMap(iCall.getHeaders(), "header", iCall.getMethod().toString());
+		logMap(iCall.getHeaders(), "params", iCall.getMethod().toString());
+		Log.d(DEBUG_TAG+".onCall."+iCall.getMethod()+"", "Rawbody: "+iCall.getRawBody());
+
+		RequestQueue mRequestQueue;
+		if(primaryRequestQueue) {
+			Log.d(DEBUG_TAG, "primaryRequestQueue");
+			mRequestQueue = getRequestQueue();
+		}else{
+			Log.d(DEBUG_TAG, "secondaryRequestQueue");
+			mRequestQueue = this.getSecondaryRequestQueue();
+		}
+		if(!iCall.getCode().equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN)) {
+			temporaryCallQueue.add(iCall);
+		}
+		mRequestQueue.add(iCall.build(new Response.Listener<String>() {
+			@Override
+			public void onResponse(String s) {
+				onResponseFinal(s, iCall.getCallback(), iCall.getCode(), iCall.getMethod().toString());
+			}
+		}, new Response.ErrorListener() {
+			@Override
+			public void onErrorResponse(VolleyError volleyError) {
+				onResponseError(volleyError, iCall.getCallback(), iCall.getCode(), iCall.getMethod().toString());
+			}
+		}));
+	}
+
 	private void onCall(int method, String url, String code, Request request, IOCallbacks IOCallbacks, Map<String, String> headers, Map<String, String> params, String rawBody){
 		onCall(method, url, code, request, IOCallbacks, headers, params, rawBody, true);
 	}
@@ -156,7 +191,13 @@ public class VolleyController {
             mRequestQueue = this.getSecondaryRequestQueue();
         }
         if(!code.equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN)) {
-            temporaryCallQueue.add(new InternetCall(request, code, IOCallbacks, url, headers, params, rawBody));
+            temporaryCallQueue.add(new InternetCall()
+		            .setCode(code)
+		            .setUrl(url)
+		            .setHeaders(headers)
+		            .setParams(params)
+		            .setRawBody(rawBody)
+		            .setCallback(IOCallbacks));
         }
         mRequestQueue.add(request);
 	}
@@ -216,115 +257,18 @@ public class VolleyController {
 
     private void doCall(final InternetCall iCall, String oldAccessToken, String accessToken, final String metodo){
         RequestQueue rq = getRequestQueue();
-        Request r = iCall.getRequest();
-	    rq.add(r instanceof StringRequest ?
-			    new StringRequest(r.getMethod(), iCall.replaceAccessToken(oldAccessToken, accessToken),
-					    new Response.Listener<String>() {
-						    @Override
-						    public void onResponse(String s) {
-							    onResponseFinal(s, iCall.getCallback(), iCall.getCode(), metodo);
-						    }
-					    }, new Response.ErrorListener() {
-				    @Override
-				    public void onErrorResponse(VolleyError volleyError) {
-					    onResponseError(volleyError, iCall.getCallback(), iCall.getCode(), metodo);
-				    }
-			    }){
-				    @Override
-				    protected Response<String> parseNetworkResponse(NetworkResponse response) {
-					    try {
-						    String utf8String = new String(response.data, "UTF-8");
-						    return Response.success(utf8String, HttpHeaderParser.parseCacheHeaders(response));
-					    } catch (UnsupportedEncodingException e) {
-						    e.printStackTrace();
-					    }
-					    return super.parseNetworkResponse(response);
-				    }
-
-				    @Override
-				    public Map<String, String> getHeaders() throws AuthFailureError {
-					    if(iCall.getHeaders()!=null){
-						    Map<String, String> headers = iCall.getHeaders();
-						    for (Map.Entry<String, String> entry : headers.entrySet())
-						    {
-							    Log.v(DEBUG_TAG + "." + metodo, "header -> " + entry.getKey() + ": " + entry.getValue());
-						    }
-						    return headers;
-					    }
-					    return super.getHeaders();
-				    }
-
-				    @Override
-				    protected Map<String, String> getParams() {
-					    if(iCall.getParams()!=null){
-						    Map<String, String> headers = iCall.getParams();
-						    for (Map.Entry<String, String> entry : headers.entrySet())
-						    {
-							    Log.v(DEBUG_TAG + "." + metodo, "params -> " + entry.getKey() + ": " + entry.getValue());
-						    }
-						    return iCall.getParams();
-					    }
-					    return getParams();
-				    }
-
-				    @Override
-				    public byte[] getBody() throws AuthFailureError {
-					    if(iCall.getRawBody()!=null) {
-						    Log.v(DEBUG_TAG + "." + metodo, "body -> " + iCall.getRawBody());
-						    return iCall.getRawBody().getBytes();
-					    }
-					    return super.getBody();
-				    }
-
-			    } :
-			    new JsonObjectRequest(r.getMethod(), iCall.replaceAccessToken(oldAccessToken, accessToken), null,
-					    new Response.Listener<JSONObject>() {
-						    @Override
-						    public void onResponse(JSONObject jsonObject) {
-							    VolleyController.this.onResponse(jsonObject, iCall.getCallback(), iCall.getCode(), metodo);
-						    }
-					    }, new Response.ErrorListener() {
-				    @Override
-				    public void onErrorResponse(VolleyError volleyError) {
-					    onResponseError(volleyError, iCall.getCallback(), iCall.getCode(), metodo);
-				    }
-			    }){
-				    @Override
-				    public Map<String, String> getHeaders() throws AuthFailureError {
-					    if(iCall.getHeaders()!=null){
-						    Map<String, String> headers = iCall.getHeaders();
-						    for (Map.Entry<String, String> entry : headers.entrySet())
-						    {
-							    Log.v(DEBUG_TAG + "." + metodo, "header -> " + entry.getKey() + ": " + entry.getValue());
-						    }
-						    return headers;
-					    }
-					    return super.getHeaders();
-				    }
-
-				    @Override
-				    protected Map<String, String> getParams() {
-					    if(iCall.getParams()!=null){
-						    Map<String, String> headers = iCall.getParams();
-						    for (Map.Entry<String, String> entry : headers.entrySet())
-						    {
-							    Log.v(DEBUG_TAG + "." + metodo, "params -> " + entry.getKey() + ": " + entry.getValue());
-						    }
-						    return iCall.getParams();
-					    }
-					    return getParams();
-				    }
-
-				    @Override
-				    public byte[] getBody() {
-					    if(iCall.getRawBody()!=null) {
-						    Log.v(DEBUG_TAG + "." + metodo, "body -> " + iCall.getRawBody());
-						    return iCall.getRawBody().getBytes();
-					    }
-					    return super.getBody();
-				    }
-
-			    });
+	    rq.add(iCall.replaceAccessToken(oldAccessToken, accessToken)
+	    .build(new Response.Listener<String>() {
+		    @Override
+		    public void onResponse(String s) {
+			    onResponseFinal(s, iCall.getCallback(), iCall.getCode(), metodo);
+		    }
+	    }, new Response.ErrorListener() {
+		    @Override
+		    public void onErrorResponse(VolleyError volleyError) {
+			    onResponseError(volleyError, iCall.getCallback(), iCall.getCode(), metodo);
+		    }
+	    }));
     }
 
 	private void onResponse(JSONObject jsonObject, IOCallbacks IOCallbacks, String code, int method){

@@ -150,9 +150,9 @@ public class MainActivity extends AppCompatActivity
 							Log.d(DEBUG_TAG, "Code: " + code + " | Response: " + error);
 							textView.setText(VolleyController.getInstance().getMessage(error));
 						}
-					}));
+					})
+			);
 		} else if (id == R.id.nav_DELETE) {
-
 			VolleyController.getInstance().onCall(new InternetCall()
 					.setUrl("http://jsonplaceholder.typicode.com/posts/1")
 					.setMethod(InternetCall.Method.DELETE)

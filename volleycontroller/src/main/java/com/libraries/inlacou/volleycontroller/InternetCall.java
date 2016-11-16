@@ -243,6 +243,22 @@ public class InternetCall {
 		return this;
 	}
 
+	public InternetCall putHeaders(Map<String, String> headers) {
+		if(this.headers==null){
+			this.headers = new HashMap<>();
+		}
+		this.headers.putAll(headers);
+		return this;
+	}
+
+	public InternetCall putParams(Map<String, String> params) {
+		if(this.params==null){
+			this.params = new HashMap<>();
+		}
+		this.params.putAll(headers);
+		return this;
+	}
+
 	public enum Method{
 		GET, POST, PUT, DELETE;
 

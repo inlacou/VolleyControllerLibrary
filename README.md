@@ -53,6 +53,8 @@ Library asks you for the messages to check this states. For `authToken`, it also
 
 Example call:
 
+##1.X
+
 ```java
 public static void doPutUserData(String name, String lastname,
                                      long birthdate,
@@ -69,6 +71,32 @@ public static void doPutUserData(String name, String lastname,
         NetworkLogic.getInstance().doPut(baseUrl + "/api/users/me?access_token=" + SharedPreferencesManager.getAuthToken(), map, code, callback);
     }
 ```
+
+##2.X
+
+```java
+VolleyController.getInstance().onCall(new InternetCall()
+					.setUrl("http://jsonplaceholder.typicode.com/posts/1")
+					.setMethod(InternetCall.Method.PUT)
+					.putParam("id", "1")
+					.putParam("title", "foo")
+					.putParam("body", "bar")
+					.putParam("userId", "1")
+					.setCode("code_modify_post")
+					.addCallback(new VolleyController.IOCallbacks() {
+						@Override
+						public void onResponse(String response, String code) {
+							Log.d(DEBUG_TAG, "Code: " + code + " | Response: " + response);
+							textView.setText(response);
+						}
+
+						@Override
+						public void onResponseError(VolleyError error, String code) {
+							Log.d(DEBUG_TAG, "Code: " + code + " | Response: " + error);
+							textView.setText(VolleyController.getInstance().getMessage(error));
+						}
+					})
+			);```
 
 Maybe you are confused by the `code` param. It's just for easier debugging, you can use empty Strings without problem.
 

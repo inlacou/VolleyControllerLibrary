@@ -7,13 +7,9 @@ import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.Response;
-import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.StringRequest;
 
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -39,6 +35,7 @@ public class InternetCall {
 		params = new HashMap<>();
 		headers = new HashMap<>();
 		method = Method.GET;
+		rawBody = "";
 		setRetryPolicy(new DefaultRetryPolicy(10000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 	}
 
@@ -70,7 +67,7 @@ public class InternetCall {
 	}
 
 	public InternetCall setParams(Map<String, String> params) {
-		rawBody = null;
+		rawBody = "";
 		this.params = params;
 		return this;
 	}
@@ -135,27 +132,32 @@ public class InternetCall {
 			}
 		}
 
-		if(rawBody!=null) {
+		if(rawBody!=null && !rawBody.isEmpty()) {
 			rawBody = rawBody.replace(oldAccessToken, newAccessToken);
 		}
 
 		return this;
 	}
 
-	public StringRequest build(Response.Listener<String> listener, Response.ErrorListener errorListener) {
+	public CustomRequest build(final com.android.volley.Response.Listener<CustomResponse> listener, com.android.volley.Response.ErrorListener errorListener) {
+		while(params.values().remove(null));
+		while(headers.values().remove(null));
+		if(rawBody==null){
+			rawBody = "";
+		}
 		for(int i=0; i<interceptors.size(); i++){
 			interceptors.get(i).intercept(this);
 		}
-		return new StringRequest(this.getMethod().value(), getUrl(), listener, errorListener){
+		return new CustomRequest(this.getMethod().value(), getUrl(), errorListener){
 			@Override
-			protected Response<String> parseNetworkResponse(NetworkResponse response) {
-				try {
-					String utf8String = new String(response.data, "UTF-8");
-					return Response.success(utf8String, HttpHeaderParser.parseCacheHeaders(response));
-				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
-				}
-				return super.parseNetworkResponse(response);
+			protected void deliverResponse(Object response) {
+				listener.onResponse((CustomResponse) response);
+			}
+
+			@Override
+			protected Response<CustomResponse> parseNetworkResponse(NetworkResponse response) {
+				CustomResponse newCustomResponse = new CustomResponse(response);
+				return com.android.volley.Response.success(newCustomResponse, newCustomResponse.getChacheHeaders());
 			}
 
 			@Override
@@ -236,6 +238,10 @@ public class InternetCall {
 	}
 
 	public InternetCall putParam(String key, String value) {
+		if(value==null){
+			return this;
+		}
+		rawBody = "";
 		if(params==null){
 			params = new HashMap<>();
 		}
@@ -252,10 +258,12 @@ public class InternetCall {
 	}
 
 	public InternetCall putParams(Map<String, String> params) {
+		while(params.values().remove(null));
+		rawBody = "";
 		if(this.params==null){
 			this.params = new HashMap<>();
 		}
-		this.params.putAll(headers);
+		this.params.putAll(params);
 		return this;
 	}
 

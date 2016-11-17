@@ -2,21 +2,12 @@ package com.libraries.inlacou.volleycontroller;
 
 import android.app.Application;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.util.Log;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.DefaultRetryPolicy;
-import com.android.volley.NetworkResponse;
-import com.android.volley.NoConnectionError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
-import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.HttpHeaderParser;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONException;
@@ -28,7 +19,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -159,9 +149,9 @@ public class VolleyController {
 		if(!iCall.getCode().equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN)) {
 			temporaryCallQueue.add(iCall);
 		}
-		mRequestQueue.add(iCall.build(new Response.Listener<String>() {
+		mRequestQueue.add(iCall.build(new Response.Listener<CustomResponse>() {
 			@Override
-			public void onResponse(String s) {
+			public void onResponse(CustomResponse s) {
 				VolleyController.this.onResponse(s, iCall.getCallbacks(), iCall.getCode(), iCall.getMethod());
 			}
 		}, new Response.ErrorListener() {
@@ -181,10 +171,10 @@ public class VolleyController {
 		}
 	}
 
-	private void onResponseFinal(String response, ArrayList<IOCallbacks> ioCallbacks, String code, InternetCall.Method method){
+	private void onResponseFinal(CustomResponse response, ArrayList<IOCallbacks> ioCallbacks, String code, InternetCall.Method method){
 		Log.d(DEBUG_TAG+"."+method+".onStringResponse", "Code: " + code);
 		Log.d(DEBUG_TAG + "." + method + ".onStringResponse", "Method: " + method);
-		Log.d(DEBUG_TAG + "." + method + ".onStringResponse", "Response: " + response);
+		Log.d(DEBUG_TAG + "." + method + ".onStringResponse", "CustomResponse: " + response);
 		if(ioCallbacks!=null) {
 			for (int i=0; i<ioCallbacks.size(); i++){
 				if(ioCallbacks.get(i)!=null) ioCallbacks.get(i).onResponse(response, code);
@@ -193,10 +183,10 @@ public class VolleyController {
 		}
 	}
 
-	private void onResponse(String response, ArrayList<IOCallbacks> ioCallbacks, String code, InternetCall.Method method){
+	private void onResponse(CustomResponse response, ArrayList<IOCallbacks> ioCallbacks, String code, InternetCall.Method method){
 		Log.d(DEBUG_TAG+"."+method+".onStringResponse", "Code: " + code);
 		Log.d(DEBUG_TAG+"."+method+".onStringResponse", "StatusCode: " + code);
-		Log.d(DEBUG_TAG + "." + method + ".onStringResponse", "Response: " + response);
+		Log.d(DEBUG_TAG + "." + method + ".onStringResponse", "CustomResponse: " + response);
 		if(ioCallbacks!=null) {
 			if(code.equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN)){
 				Log.d(DEBUG_TAG+"."+method+".onJsonResponse", "Recibida la respuesta al codigo " + JSON_POST_UPDATE_ACCESS_TOKEN +
@@ -205,7 +195,7 @@ public class VolleyController {
 				String oldAccessToken = logicCallbacks.getAuthToken();
 				//Read answer
 				try {
-					JSONObject jsonObject = new JSONObject(response);
+					JSONObject jsonObject = new JSONObject(response.getData());
 					//Save new tokens
 					logicCallbacks.setTokens(jsonObject);
 				} catch (JSONException e) {
@@ -229,9 +219,9 @@ public class VolleyController {
 	private void doCall(final InternetCall iCall, String oldAccessToken, String accessToken, final String metodo){
 		RequestQueue rq = getRequestQueue();
 		rq.add(iCall.replaceAccessToken(oldAccessToken, accessToken)
-				.build(new Response.Listener<String>() {
+				.build(new Response.Listener<CustomResponse>() {
 					@Override
-					public void onResponse(String s) {
+					public void onResponse(CustomResponse s) {
 						VolleyController.this.onResponseFinal(s, iCall.getCallbacks(), iCall.getCode(), iCall.getMethod());
 					}
 				}, new Response.ErrorListener() {
@@ -302,7 +292,7 @@ public class VolleyController {
 		for (int i=0; i<interceptors.size(); i++){
 			interceptors.get(i).intercept(url, headers, params, null);
 		}
-		VolleyMultipartRequest multipartRequest = new VolleyMultipartRequest(Request.Method.POST, url, new Response.Listener<NetworkResponse>() {
+		VolleyMultipartRequest multipartRequest = new VolleyMultipartRequest(Request.Method.POST, url, new CustomResponse.Listener<NetworkResponse>() {
 			@Override
 			public void onResponse(NetworkResponse response) {
 				Log.v(DEBUG_TAG, "networkResponse.statusCode" + response.statusCode);
@@ -311,7 +301,7 @@ public class VolleyController {
 				Log.v(DEBUG_TAG, "networkResponse.headers" + response.headers);
 				VolleyController.this.onResponse(new String(response.data), callbacks, code, Request.Method.POST);
 			}
-		}, new Response.ErrorListener() {
+		}, new CustomResponse.ErrorListener() {
 			@Override
 			public void onErrorResponse(VolleyError error) {
 				NetworkResponse networkResponse = error.networkResponse;
@@ -373,7 +363,7 @@ public class VolleyController {
 		 * @param response
 		 * @param code
 		 */
-		void onResponse(String response, String code);
+		void onResponse(CustomResponse response, String code);
 
 		/**
 		 *

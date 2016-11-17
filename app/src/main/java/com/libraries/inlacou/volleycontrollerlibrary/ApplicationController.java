@@ -4,6 +4,7 @@ import android.app.Application;
 import android.widget.Toast;
 
 import com.android.volley.VolleyError;
+import com.libraries.inlacou.volleycontroller.CustomResponse;
 import com.libraries.inlacou.volleycontroller.InternetCall;
 import com.libraries.inlacou.volleycontroller.VolleyController;
 
@@ -83,11 +84,11 @@ public class ApplicationController extends Application {
 						.putParam("alwaysParam", "Hey! :D")
 						.addCallback(new VolleyController.IOCallbacks() {
 							@Override
-							public void onResponse(String response, String code) {
+							public void onResponse(CustomResponse response, String code) {
 								try {
-									Toast.makeText(ApplicationController.this, response.substring(0, 20) + "...", Toast.LENGTH_SHORT).show();
+									Toast.makeText(ApplicationController.this, response.getData().substring(0, 20) + "...", Toast.LENGTH_SHORT).show();
 								}catch (IndexOutOfBoundsException ioobe){
-									Toast.makeText(ApplicationController.this, response.substring(0, response.length()), Toast.LENGTH_SHORT).show();
+									Toast.makeText(ApplicationController.this, response.getData().substring(0, response.getData().length()), Toast.LENGTH_SHORT).show();
 								}
 							}
 							

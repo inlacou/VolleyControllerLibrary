@@ -16,8 +16,11 @@ import android.view.MenuItem;
 import android.widget.TextView;
 
 import com.android.volley.VolleyError;
+import com.libraries.inlacou.volleycontroller.CustomResponse;
 import com.libraries.inlacou.volleycontroller.InternetCall;
 import com.libraries.inlacou.volleycontroller.VolleyController;
+
+import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity
 		implements NavigationView.OnNavigationItemSelectedListener {
@@ -97,14 +100,14 @@ public class MainActivity extends AppCompatActivity
 					.setCode("code_get_posts")
 					.addCallback(new VolleyController.IOCallbacks() {
 						@Override
-						public void onResponse(String response, String code) {
-							Log.d(DEBUG_TAG, "Code: " + code + " | Response: " + response);
-							textView.setText(response);
+						public void onResponse(CustomResponse response, String code) {
+							Log.d(DEBUG_TAG, "Code: " + code + " | CustomResponse: " + response);
+							textView.setText(response.getData());
 						}
 
 						@Override
 						public void onResponseError(VolleyError error, String code) {
-							Log.d(DEBUG_TAG, "Code: " + code + " | Response: " + error);
+							Log.d(DEBUG_TAG, "Code: " + code + " | CustomResponse: " + error);
 							textView.setText(VolleyController.getInstance().getMessage(error));
 						}
 					}));
@@ -114,40 +117,46 @@ public class MainActivity extends AppCompatActivity
 					.setMethod(InternetCall.Method.POST)
 					.putParam("title", "foo")
 					.putParam("body", "bar")
-					.putParam("userId", "1")
+					.putParam("userId", "5")
+					.putParam("null", null)
+					.putParam("notNull", "something")
 					.setCode("code_create_posts")
 					.addCallback(new VolleyController.IOCallbacks() {
 						@Override
-						public void onResponse(String response, String code) {
-							Log.d(DEBUG_TAG, "Code: " + code + " | Response: " + response);
-							textView.setText(response);
+						public void onResponse(CustomResponse response, String code) {
+							Log.d(DEBUG_TAG, "Code: " + code + " | CustomResponse: " + response);
+							textView.setText(response.getData());
 						}
 
 						@Override
 						public void onResponseError(VolleyError error, String code) {
-							Log.d(DEBUG_TAG, "Code: " + code + " | Response: " + error);
+							Log.d(DEBUG_TAG, "Code: " + code + " | CustomResponse: " + error);
 							textView.setText(VolleyController.getInstance().getMessage(error));
 						}
 					}));
 		} else if (id == R.id.nav_PUT) {
+			HashMap<String, String> params = new HashMap<>();
+			params.put("id", "1");
+			params.put("title", "foo");
+			params.put("null", null);
+			params.put("notNull", "something");
+			params.put("body", "bar");
+			params.put("userId", "1");
 			VolleyController.getInstance().onCall(new InternetCall()
 					.setUrl("http://jsonplaceholder.typicode.com/posts/1")
 					.setMethod(InternetCall.Method.PUT)
-					.putParam("id", "1")
-					.putParam("title", "foo")
-					.putParam("body", "bar")
-					.putParam("userId", "1")
+					.putParams(params)
 					.setCode("code_modify_post")
 					.addCallback(new VolleyController.IOCallbacks() {
 						@Override
-						public void onResponse(String response, String code) {
-							Log.d(DEBUG_TAG, "Code: " + code + " | Response: " + response);
-							textView.setText(response);
+						public void onResponse(CustomResponse response, String code) {
+							Log.d(DEBUG_TAG, "Code: " + code + " | CustomResponse: " + response);
+							textView.setText(response.getData());
 						}
 
 						@Override
 						public void onResponseError(VolleyError error, String code) {
-							Log.d(DEBUG_TAG, "Code: " + code + " | Response: " + error);
+							Log.d(DEBUG_TAG, "Code: " + code + " | CustomResponse: " + error);
 							textView.setText(VolleyController.getInstance().getMessage(error));
 						}
 					})
@@ -159,14 +168,14 @@ public class MainActivity extends AppCompatActivity
 					.setCode("code_delete_post")
 					.addCallback(new VolleyController.IOCallbacks() {
 						@Override
-						public void onResponse(String response, String code) {
-							Log.d(DEBUG_TAG, "Code: " + code + " | Response: " + response);
-							textView.setText(response);
+						public void onResponse(CustomResponse response, String code) {
+							Log.d(DEBUG_TAG, "Code: " + code + " | CustomResponse: " + response);
+							textView.setText(response.getData());
 						}
 
 						@Override
 						public void onResponseError(VolleyError error, String code) {
-							Log.d(DEBUG_TAG, "Code: " + code + " | Response: " + error);
+							Log.d(DEBUG_TAG, "Code: " + code + " | CustomResponse: " + error);
 							textView.setText(VolleyController.getInstance().getMessage(error));
 						}
 					}));

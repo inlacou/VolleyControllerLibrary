@@ -1,5 +1,9 @@
 package com.libraries.inlacou.volleycontroller;
 
+import android.content.Context;
+
+import java.io.IOException;
+
 /**
  * Created by inlacou on 18/11/16.
  */
@@ -9,8 +13,9 @@ public class File {
 	private String location, format, name;
 	private Type type;
 
-	public File(String location, String format, String name, Type type) {
+	public File(Context context, String location, String format, String name, Type type) throws IOException {
 		this.location = location;
+		ImageUtils.getFileDataFromBitmap(context, ImageUtils.getBitmapFromPath(getLocation()));
 		this.format = format;
 		this.name = name;
 		this.type = type;

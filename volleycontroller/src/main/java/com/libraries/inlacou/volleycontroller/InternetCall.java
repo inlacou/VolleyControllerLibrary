@@ -162,7 +162,7 @@ public class InternetCall {
 			interceptors.get(i).intercept(this);
 		}
 		if(file==null) {
-			return new CustomRequest(this.getMethod().value(), getUrl(), errorListener) {
+			Request request = new CustomRequest(this.getMethod().value(), getUrl(), errorListener) {
 				@Override
 				protected void deliverResponse(Object response) {
 					listener.onResponse((CustomResponse) response);
@@ -213,8 +213,10 @@ public class InternetCall {
 					return super.getBody();
 				}
 			};
+			request.setRetryPolicy(retryPolicy);
+			return request;
 		}else{
-			return new VolleyMultipartRequest(this.getMethod().value(), getUrl(), errorListener) {
+			Request request = new VolleyMultipartRequest(this.getMethod().value(), getUrl(), errorListener) {
 				@Override
 				protected void deliverResponse(Object response) {
 					listener.onResponse((CustomResponse) response);
@@ -245,6 +247,8 @@ public class InternetCall {
 					return params;
 				}
 			};
+			request.setRetryPolicy(retryPolicy);
+			return request;
 		}
 	}
 

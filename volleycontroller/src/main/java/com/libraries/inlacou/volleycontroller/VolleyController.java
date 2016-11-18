@@ -149,7 +149,7 @@ public class VolleyController {
 		if(!iCall.getCode().equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN)) {
 			temporaryCallQueue.add(iCall);
 		}
-		mRequestQueue.add(iCall.build(new Response.Listener<CustomResponse>() {
+		mRequestQueue.add(iCall.build(context, new Response.Listener<CustomResponse>() {
 			@Override
 			public void onResponse(CustomResponse s) {
 				VolleyController.this.onResponse(s, iCall.getCallbacks(), iCall.getCode(), iCall.getMethod());
@@ -219,7 +219,7 @@ public class VolleyController {
 	private void doCall(final InternetCall iCall, String oldAccessToken, String accessToken, final String metodo){
 		RequestQueue rq = getRequestQueue();
 		rq.add(iCall.replaceAccessToken(oldAccessToken, accessToken)
-				.build(new Response.Listener<CustomResponse>() {
+				.build(context, new Response.Listener<CustomResponse>() {
 					@Override
 					public void onResponse(CustomResponse s) {
 						VolleyController.this.onResponseFinal(s, iCall.getCallbacks(), iCall.getCode(), iCall.getMethod());

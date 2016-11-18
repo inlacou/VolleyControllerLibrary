@@ -21,7 +21,7 @@ public class CustomRequest extends Request {
 
 	@Override
 	protected void deliverResponse(Object response) {
-
+		//Do nothing, we will override it
 	}
 
 	@Override

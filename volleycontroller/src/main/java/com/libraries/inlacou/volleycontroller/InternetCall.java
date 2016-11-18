@@ -1,5 +1,6 @@
 package com.libraries.inlacou.volleycontroller;
 
+import android.content.Context;
 import android.util.Log;
 
 import com.android.volley.AuthFailureError;
@@ -9,10 +10,12 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.toolbox.StringRequest;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Created by inlacou on 10/09/14.
@@ -28,6 +31,7 @@ public class InternetCall {
 	private String rawBody;
 	private DefaultRetryPolicy retryPolicy;
 	private ArrayList<Interceptor> interceptors;
+	private File file;
 	private ArrayList<VolleyController.IOCallbacks> callbacks;
 
 	public InternetCall() {
@@ -45,6 +49,15 @@ public class InternetCall {
 
 	public InternetCall setUrl(String url) {
 		this.url = url;
+		return this;
+	}
+
+	public File getFile() {
+		return file;
+	}
+
+	public InternetCall setFile(File file) {
+		this.file = file;
 		return this;
 	}
 
@@ -139,7 +152,7 @@ public class InternetCall {
 		return this;
 	}
 
-	public CustomRequest build(final com.android.volley.Response.Listener<CustomResponse> listener, com.android.volley.Response.ErrorListener errorListener) {
+	public Request build(final Context context, final com.android.volley.Response.Listener<CustomResponse> listener, com.android.volley.Response.ErrorListener errorListener) {
 		while(params.values().remove(null));
 		while(headers.values().remove(null));
 		if(rawBody==null){
@@ -148,59 +161,91 @@ public class InternetCall {
 		for(int i=0; i<interceptors.size(); i++){
 			interceptors.get(i).intercept(this);
 		}
-		return new CustomRequest(this.getMethod().value(), getUrl(), errorListener){
-			@Override
-			protected void deliverResponse(Object response) {
-				listener.onResponse((CustomResponse) response);
-			}
+		if(file==null) {
+			return new CustomRequest(this.getMethod().value(), getUrl(), errorListener) {
+				@Override
+				protected void deliverResponse(Object response) {
+					listener.onResponse((CustomResponse) response);
+				}
 
-			@Override
-			protected Response<CustomResponse> parseNetworkResponse(NetworkResponse response) {
-				CustomResponse newCustomResponse = new CustomResponse(response);
-				return com.android.volley.Response.success(newCustomResponse, newCustomResponse.getChacheHeaders());
-			}
+				@Override
+				protected Response<CustomResponse> parseNetworkResponse(NetworkResponse response) {
+					CustomResponse newCustomResponse = new CustomResponse(response);
+					//we set here the response (the object received by deliverResponse);
+					return com.android.volley.Response.success(newCustomResponse, newCustomResponse.getChacheHeaders());
+				}
 
-			@Override
-			public Map<String, String> getHeaders() throws AuthFailureError {
-				if(InternetCall.this.getHeaders()!=null){
-					Map<String, String> headers = InternetCall.this.getHeaders();
-					for (Map.Entry<String, String> entry : headers.entrySet())
-					{
-						Log.v(DEBUG_TAG + "." + InternetCall.this.getMethod(), "header -> " + entry.getKey() + ": " + entry.getValue());
+				@Override
+				public Map<String, String> getHeaders() throws AuthFailureError {
+					if (InternetCall.this.getHeaders() != null) {
+						Map<String, String> headers = InternetCall.this.getHeaders();
+						for (Map.Entry<String, String> entry : headers.entrySet()) {
+							Log.v(DEBUG_TAG + "." + InternetCall.this.getMethod(), "header -> " + entry.getKey() + ": " + entry.getValue());
+						}
+						return InternetCall.this.headers;
 					}
-					return InternetCall.this.headers;
+					return super.getHeaders();
 				}
-				return super.getHeaders();
-			}
 
-			@Override
-			protected Map<String, String> getParams() {
-				if(InternetCall.this.getParams()!=null){
-					Map<String, String> headers = InternetCall.this.getParams();
-					for (Map.Entry<String, String> entry : headers.entrySet())
-					{
-						Log.v(DEBUG_TAG + "." + InternetCall.this.getMethod(), "params -> " + entry.getKey() + ": " + entry.getValue());
+				@Override
+				protected Map<String, String> getParams() {
+					if (InternetCall.this.getParams() != null) {
+						Map<String, String> headers = InternetCall.this.getParams();
+						for (Map.Entry<String, String> entry : headers.entrySet()) {
+							Log.v(DEBUG_TAG + "." + InternetCall.this.getMethod(), "params -> " + entry.getKey() + ": " + entry.getValue());
+						}
+						return InternetCall.this.getParams();
 					}
-					return InternetCall.this.getParams();
+					try {
+						return super.getParams();
+					} catch (AuthFailureError authFailureError) {
+						authFailureError.printStackTrace();
+					}
+					return new HashMap<>();
 				}
-				try {
-					return super.getParams();
-				} catch (AuthFailureError authFailureError) {
-					authFailureError.printStackTrace();
-				}
-				return new HashMap<>();
-			}
 
-			@Override
-			public byte[] getBody() throws AuthFailureError {
-				if(InternetCall.this.getRawBody()!=null && !InternetCall.this.getRawBody().isEmpty()) {
-					Log.v(DEBUG_TAG + "." + InternetCall.this.getMethod(), "body -> " + InternetCall.this.getRawBody());
-					return InternetCall.this.getRawBody().getBytes();
+				@Override
+				public byte[] getBody() throws AuthFailureError {
+					if (InternetCall.this.getRawBody() != null && !InternetCall.this.getRawBody().isEmpty()) {
+						Log.v(DEBUG_TAG + "." + InternetCall.this.getMethod(), "body -> " + InternetCall.this.getRawBody());
+						return InternetCall.this.getRawBody().getBytes();
+					}
+					return super.getBody();
 				}
-				return super.getBody();
-			}
+			};
+		}else{
+			return new VolleyMultipartRequest(this.getMethod().value(), getUrl(), errorListener) {
+				@Override
+				protected void deliverResponse(Object response) {
+					listener.onResponse((CustomResponse) response);
+				}
 
-		};
+				@Override
+				protected Response<CustomResponse> parseNetworkResponse(NetworkResponse response) {
+					CustomResponse newCustomResponse = new CustomResponse(response);
+					//we set here the response (the object received by deliverResponse);
+					return com.android.volley.Response.success(newCustomResponse, newCustomResponse.getChacheHeaders());
+				}
+
+				@Override
+				protected Map<String, String> getParams() {
+					return params;
+				}
+
+				@Override
+				protected Map<String, DataPart> getByteData() {
+					Map<String, DataPart> params = new HashMap<>();
+					// file name could found file base or direct access from real path
+					// for now just get bitmap data from ImageView
+					try {
+						params.put("files", new DataPart(file.getName()+"."+file.getFormat(), ImageUtils.getFileDataFromBitmap(context, ImageUtils.getBitmapFromPath(file.getLocation())), file.getType().toString()+"/"+file.getFormat()));
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					return params;
+				}
+			};
+		}
 	}
 
 	public InternetCall setRetryPolicy(DefaultRetryPolicy retryPolicy) {

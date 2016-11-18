@@ -16,11 +16,13 @@ import android.view.MenuItem;
 import android.widget.TextView;
 
 import com.android.volley.VolleyError;
+import com.google.gson.Gson;
 import com.libraries.inlacou.volleycontroller.CustomResponse;
 import com.libraries.inlacou.volleycontroller.InternetCall;
 import com.libraries.inlacou.volleycontroller.VolleyController;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity
 		implements NavigationView.OnNavigationItemSelectedListener {
@@ -95,14 +97,15 @@ public class MainActivity extends AppCompatActivity
 
 		if (id == R.id.nav_GET) {
 			VolleyController.getInstance().onCall(new InternetCall()
-					.setUrl("https://jsonplaceholder.typicode.com/posts")
+					.setUrl("http://playground.byvapps.com/api/search?offset=0&limit=100")
 					.setMethod(InternetCall.Method.GET)
 					.setCode("code_get_posts")
 					.addCallback(new VolleyController.IOCallbacks() {
 						@Override
 						public void onResponse(CustomResponse response, String code) {
-							Log.d(DEBUG_TAG, "Code: " + code + " | CustomResponse: " + response);
+							Log.d(DEBUG_TAG, "Code: " + code + " | CustomResponse: " + new Gson().toJson(response));
 							textView.setText(response.getData());
+							Log.d(DEBUG_TAG, "CustomResponse.headers: " + new Gson().toJson(response.getHeaders()));
 						}
 
 						@Override

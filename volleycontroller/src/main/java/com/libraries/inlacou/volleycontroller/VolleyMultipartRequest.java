@@ -23,13 +23,12 @@ import java.util.Map;
  * Sketch Project Studio
  * Created by Angga on 27/04/2016 12.05.
  */
-public class VolleyMultipartRequest extends Request<NetworkResponse> {
+public class VolleyMultipartRequest extends Request {
 	private final static String DEBUG_TAG = VolleyMultipartRequest.class.getName();
 	private final String twoHyphens = "--";
 	private final String lineEnd = "\r\n";
 	private final String boundary = "apiclient-" + System.currentTimeMillis();
 
-	private Response.Listener<NetworkResponse> mListener;
 	private Response.ErrorListener mErrorListener;
 	private Map<String, String> mHeaders;
 
@@ -38,14 +37,11 @@ public class VolleyMultipartRequest extends Request<NetworkResponse> {
 	 *
 	 * @param url           request destination
 	 * @param headers       predefined custom header
-	 * @param listener      on success achieved 200 code from request
 	 * @param errorListener on error http or library timeout
 	 */
 	public VolleyMultipartRequest(String url, Map<String, String> headers,
-	                              Response.Listener<NetworkResponse> listener,
 	                              Response.ErrorListener errorListener) {
 		super(Method.POST, url, errorListener);
-		this.mListener = listener;
 		this.mErrorListener = errorListener;
 		this.mHeaders = headers;
 	}
@@ -55,14 +51,11 @@ public class VolleyMultipartRequest extends Request<NetworkResponse> {
 	 *
 	 * @param method        method for now accept POST and GET only
 	 * @param url           request destination
-	 * @param listener      on success event handler
 	 * @param errorListener on error event handler
 	 */
 	public VolleyMultipartRequest(int method, String url,
-	                              Response.Listener<NetworkResponse> listener,
 	                              Response.ErrorListener errorListener) {
 		super(method, url, errorListener);
-		this.mListener = listener;
 		this.mErrorListener = errorListener;
 	}
 
@@ -115,10 +108,10 @@ public class VolleyMultipartRequest extends Request<NetworkResponse> {
 	}
 
 	@Override
-	protected Response<NetworkResponse> parseNetworkResponse(NetworkResponse response) {
+	protected Response parseNetworkResponse(NetworkResponse response) {
 		try {
 			return Response.success(
-					response,
+					new CustomResponse(response),
 					HttpHeaderParser.parseCacheHeaders(response));
 		} catch (Exception e) {
 			return Response.error(new ParseError(e));
@@ -126,8 +119,8 @@ public class VolleyMultipartRequest extends Request<NetworkResponse> {
 	}
 
 	@Override
-	protected void deliverResponse(NetworkResponse response) {
-		mListener.onResponse(response);
+	protected void deliverResponse(Object response) {
+		//Do nothing, we will override it
 	}
 
 	@Override

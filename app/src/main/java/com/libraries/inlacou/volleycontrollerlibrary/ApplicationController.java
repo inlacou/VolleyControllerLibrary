@@ -47,8 +47,8 @@ public class ApplicationController extends Application {
 			}
 
 			@Override
-			public void doRefreshToken(ArrayList<VolleyController.IOCallbacks> ioCallbacks) {
-
+			public InternetCall doRefreshToken(ArrayList<VolleyController.IOCallbacks> ioCallbacks) {
+				return null;
 			}
 
 			@Override

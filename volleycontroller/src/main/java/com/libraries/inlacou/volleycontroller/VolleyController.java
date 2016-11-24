@@ -131,6 +131,9 @@ public class VolleyController {
 	}
 
 	private void onCall(final InternetCall iCall, boolean primaryRequestQueue){
+		if(iCall==null) {
+			return;
+		}
 		iCall.addInterceptors(interceptors);
 		Log.d(DEBUG_TAG + ".onCall." + iCall.getMethod(), "Request para la " + (primaryRequestQueue ? "primera" : "segunda") + " requestQueue creada con codigo: " + iCall.getCode());
 		Log.d(DEBUG_TAG+".onCall."+iCall.getMethod()+"", "Making "+iCall.getMethod()+" call to url: " + iCall.getUrl());
@@ -146,7 +149,7 @@ public class VolleyController {
 			Log.d(DEBUG_TAG, "secondaryRequestQueue");
 			mRequestQueue = this.getSecondaryRequestQueue();
 		}
-		if(!iCall.getCode().equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN)) {
+		if(iCall.getCode()!=null && !iCall.getCode().equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN)) {
 			temporaryCallQueue.add(iCall);
 		}
 		mRequestQueue.add(iCall.build(context, new Response.Listener<CustomResponse>() {
@@ -188,7 +191,7 @@ public class VolleyController {
 		Log.d(DEBUG_TAG+"."+method+".onStringResponse", "StatusCode: " + code);
 		Log.d(DEBUG_TAG + "." + method + ".onStringResponse", "CustomResponse: " + response);
 		if(ioCallbacks!=null) {
-			if(code.equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN)){
+			if(code!=null && code.equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN)){
 				Log.d(DEBUG_TAG+"."+method+".onJsonResponse", "Recibida la respuesta al codigo " + JSON_POST_UPDATE_ACCESS_TOKEN +
 						", updating tokens. | " + response);
 				//Save old authToken
@@ -283,7 +286,7 @@ public class VolleyController {
 			updatingToken=true;
 			Log.d(DEBUG_TAG + ".retry", "Paramos la request queue principal");
 			mRequestQueue.stop();
-			logicCallbacks.doRefreshToken(ioCallbacks);
+			VolleyController.getInstance().onCall(logicCallbacks.doRefreshToken(ioCallbacks).setCode(JSON_POST_UPDATE_ACCESS_TOKEN));
 		}
 	}
 
@@ -380,7 +383,7 @@ public class VolleyController {
 
 		String getAuthToken();
 
-		void doRefreshToken(ArrayList<IOCallbacks> ioCallbacks);
+		InternetCall doRefreshToken(ArrayList<IOCallbacks> ioCallbacks);
 
 		void onRefreshTokenInvalid();
 

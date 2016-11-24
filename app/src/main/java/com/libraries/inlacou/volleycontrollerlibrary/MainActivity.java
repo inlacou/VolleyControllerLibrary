@@ -99,7 +99,6 @@ public class MainActivity extends AppCompatActivity
 			VolleyController.getInstance().onCall(new InternetCall()
 					.setUrl("http://playground.byvapps.com/api/search?offset=0&limit=100")
 					.setMethod(InternetCall.Method.GET)
-					.setCode("code_get_posts")
 					.addCallback(new VolleyController.IOCallbacks() {
 						@Override
 						public void onResponse(CustomResponse response, String code) {

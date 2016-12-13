@@ -360,6 +360,10 @@ public class VolleyController {
 		}
 	}
 
+	public void cancelRequest(InternetCall internetCall) {
+		getRequestQueue().cancelAll(internetCall.getCode());
+	}
+
 	public interface IOCallbacks {
 		/**
 		 *

@@ -214,6 +214,7 @@ public class InternetCall {
 				}
 			};
 			request.setRetryPolicy(retryPolicy);
+			if(code!=null) request.setTag(code);
 			return request;
 		}else{
 			Request request = new VolleyMultipartRequest(this.getMethod().value(), getUrl(), errorListener) {
@@ -248,6 +249,7 @@ public class InternetCall {
 				}
 			};
 			request.setRetryPolicy(retryPolicy);
+			if(code!=null) request.setTag(code);
 			return request;
 		}
 	}

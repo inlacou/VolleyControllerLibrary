@@ -268,6 +268,9 @@ public class InternetCall {
 		if(this.interceptors==null){
 			this.interceptors = new ArrayList<>();
 		}
+		if(interceptors==null){
+			return this;
+		}
 		this.interceptors = new ArrayList<Interceptor>(){{ addAll(interceptors); addAll(InternetCall.this.interceptors); }};
 		return this;
 	}
@@ -275,6 +278,9 @@ public class InternetCall {
 	public InternetCall addInterceptor(Interceptor interceptor){
 		if(this.interceptors==null){
 			this.interceptors = new ArrayList<>();
+		}
+		if(interceptor==null){
+			return this;
 		}
 		this.interceptors.add(interceptor);
 		return this;

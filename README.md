@@ -96,8 +96,13 @@ VolleyController.getInstance().onCall(new InternetCall()
 							textView.setText(VolleyController.getInstance().getMessage(error));
 						}
 					})
-			);```
+			);
+```
 
 Maybe you are confused by the `code` param. It's just for easier debugging, you can use empty Strings without problem.
 
 There you go!
+
+# RX
+[![](https://jitpack.io/v/inlacou/VolleyControllerLibrary-RX.svg)](https://jitpack.io/#inlacou/VolleyControllerLibrary-RX)
+

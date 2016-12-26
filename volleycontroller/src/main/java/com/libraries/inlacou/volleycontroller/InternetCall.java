@@ -310,6 +310,9 @@ public class InternetCall {
 		if(this.headers==null){
 			this.headers = new HashMap<>();
 		}
+		if(headers==null){
+			return this;
+		}
 		this.headers.putAll(headers);
 		return this;
 	}

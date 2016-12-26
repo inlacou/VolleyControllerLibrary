@@ -18,7 +18,7 @@ public class CustomResponse {
 	private Map<String, String> headers;
 	private String data;
 	private long networkTimeMs;
-	private Cache.Entry chacheHeaders;
+	private Cache.Entry cacheHeaders;
 
 	public CustomResponse(NetworkResponse response) {
 		try {
@@ -26,7 +26,7 @@ public class CustomResponse {
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
-		chacheHeaders = HttpHeaderParser.parseCacheHeaders(response);
+		cacheHeaders = HttpHeaderParser.parseCacheHeaders(response);
 		headers = response.headers;
 		networkTimeMs = response.networkTimeMs;
 		notModified = response.notModified;
@@ -54,6 +54,17 @@ public class CustomResponse {
 	}
 
 	public Cache.Entry getChacheHeaders() {
-		return chacheHeaders;
+		return cacheHeaders;
+	}
+
+	@Override
+	public String toString() {
+		return "{ \"statusCode\": " + statusCode +
+				", \"notModified\": " + notModified +
+				", \"headers\": " + headers +
+				", \"data\": " + data +
+				", \"networkTimeMs\": " + networkTimeMs +
+				", \"cacheHeaders\": " + cacheHeaders +
+				" }";
 	}
 }

@@ -138,7 +138,7 @@ public class VolleyController {
 		Log.d(DEBUG_TAG + ".onCall." + iCall.getMethod(), "Request para la " + (primaryRequestQueue ? "primera" : "segunda") + " requestQueue creada con codigo: " + iCall.getCode());
 		Log.d(DEBUG_TAG + ".onCall."+iCall.getMethod()+"", "Making "+iCall.getMethod()+" call to url: " + iCall.getUrl());
 		logMap(iCall.getHeaders(), "header", iCall.getMethod().toString());
-		logMap(iCall.getHeaders(), "params", iCall.getMethod().toString());
+		logMap(iCall.getParams(), "params", iCall.getMethod().toString());
 		Log.d(DEBUG_TAG+".onCall."+iCall.getMethod()+"", "Rawbody: "+iCall.getRawBody());
 
 		RequestQueue mRequestQueue;

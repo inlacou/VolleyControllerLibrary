@@ -31,6 +31,7 @@ public class InternetCall {
 	private ArrayList<Interceptor> interceptors;
 	private File file;
 	private ArrayList<VolleyController.IOCallbacks> callbacks;
+	private String fileKey;
 
 	public InternetCall() {
 		interceptors = new ArrayList<>();
@@ -54,7 +55,8 @@ public class InternetCall {
 		return file;
 	}
 
-	public InternetCall setFile(File file) {
+	public InternetCall setFile(String key, File file) {
+		this.fileKey = key;
 		this.file = file;
 		return this;
 	}
@@ -239,7 +241,7 @@ public class InternetCall {
 					// file name could found file base or direct access from real path
 					// for now just get bitmap data from ImageView
 					try {
-						params.put("files", new DataPart(file.getName()+"."+file.getFormat(), ImageUtils.getFileDataFromBitmap(context, ImageUtils.getBitmapFromPath(file.getLocation())), file.getType().toString()+"/"+file.getFormat()));
+						params.put(fileKey, new DataPart(file.getName()+"."+file.getFormat(), ImageUtils.getFileDataFromBitmap(context, ImageUtils.getBitmapFromPath(file.getLocation())), file.getType().toString()+"/"+file.getFormat()));
 					} catch (IOException e) {
 						e.printStackTrace();
 					}

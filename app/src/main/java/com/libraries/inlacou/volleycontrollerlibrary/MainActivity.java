@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity
 
 						@Override
 						public void onResponseError(VolleyError error, String code) {
-							Log.d(DEBUG_TAG, "Code: " + code + " | CustomResponse: " + error);
+							Log.d(DEBUG_TAG, "Code: " + code + " | VolleyError: " + error);
 							textView.setText(VolleyController.getInstance().getMessage(error));
 						}
 					}));
@@ -132,7 +132,7 @@ public class MainActivity extends AppCompatActivity
 
 						@Override
 						public void onResponseError(VolleyError error, String code) {
-							Log.d(DEBUG_TAG, "Code: " + code + " | CustomResponse: " + error);
+							Log.d(DEBUG_TAG, "Code: " + code + " | VolleyError: " + error);
 							textView.setText(VolleyController.getInstance().getMessage(error));
 						}
 					}));
@@ -158,7 +158,7 @@ public class MainActivity extends AppCompatActivity
 
 						@Override
 						public void onResponseError(VolleyError error, String code) {
-							Log.d(DEBUG_TAG, "Code: " + code + " | CustomResponse: " + error);
+							Log.d(DEBUG_TAG, "Code: " + code + " | VolleyError: " + error);
 							textView.setText(VolleyController.getInstance().getMessage(error));
 						}
 					})
@@ -177,12 +177,28 @@ public class MainActivity extends AppCompatActivity
 
 						@Override
 						public void onResponseError(VolleyError error, String code) {
-							Log.d(DEBUG_TAG, "Code: " + code + " | CustomResponse: " + error);
+							Log.d(DEBUG_TAG, "Code: " + code + " | VolleyError: " + error);
 							textView.setText(VolleyController.getInstance().getMessage(error));
 						}
 					}));
-		} else if (id == R.id.nav_share) {
+		} else if (id == R.id.nav_no_response) {
+			VolleyController.getInstance().onCall(new InternetCall()
+					.setUrl("http://neosalut-quiz-api.pre.tak.es/answer-load/9")
+					.setMethod(InternetCall.Method.GET)
+					.setCode("code_get_no_response")
+					.addCallback(new VolleyController.IOCallbacks() {
+						@Override
+						public void onResponse(CustomResponse response, String code) {
+							Log.d(DEBUG_TAG, "Code: " + code + " | CustomResponse: " + response);
+							textView.setText(response.getData());
+						}
 
+						@Override
+						public void onResponseError(VolleyError error, String code) {
+							Log.d(DEBUG_TAG, "Code: " + code + " | VolleyError: " + error);
+							textView.setText(VolleyController.getInstance().getMessage(error));
+						}
+					}));
 		} else if (id == R.id.nav_send) {
 
 		}

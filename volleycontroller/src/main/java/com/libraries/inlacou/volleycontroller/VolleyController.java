@@ -269,15 +269,9 @@ public class VolleyController {
 						if(ioCallbacks.get(i)!=null) ioCallbacks.get(i).onResponseError(volleyError, code);
 					}
 				}
-				return;
 			}
 		}else{
 			Log.d(DEBUG_TAG+"."+metodo+".onResponseError", "networkResponse==null");
-			if(ioCallbacks !=null) {
-				for (int i=0; i<ioCallbacks.size(); i++){
-					if(ioCallbacks.get(i)!=null) ioCallbacks.get(i).onResponseError(volleyError, code);
-				}
-			}
 		}
 		if(ioCallbacks !=null) {
 			for (int i=0; i<ioCallbacks.size(); i++){

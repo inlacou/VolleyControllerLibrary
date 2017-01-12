@@ -199,8 +199,26 @@ public class MainActivity extends AppCompatActivity
 							textView.setText(VolleyController.getInstance().getMessage(error));
 						}
 					}));
-		} else if (id == R.id.nav_send) {
+		} else if (id == R.id.nav_GET_ssl) {
+			VolleyController.getInstance().onCall(new InternetCall()
+					.setUrl("https://178.62.73.124:3000/api/profile")
+					.setMethod(InternetCall.Method.GET)
+					.setCode("code_get_no_response")
+					.putHeader("deviceId", "13")
+					.putHeader("Authorization", "Bearer HIjHZmMgXAWlBM3NuycRFUmf3vR8fPZb0gGAVkiE")
+					.addCallback(new VolleyController.IOCallbacks() {
+						@Override
+						public void onResponse(CustomResponse response, String code) {
+							Log.d(DEBUG_TAG, "Code: " + code + " | CustomResponse: " + response);
+							textView.setText(response.getData());
+						}
 
+						@Override
+						public void onResponseError(VolleyError error, String code) {
+							Log.d(DEBUG_TAG, "Code: " + code + " | VolleyError: " + error);
+							textView.setText(VolleyController.getInstance().getMessage(error));
+						}
+					}));
 		}
 
 		DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

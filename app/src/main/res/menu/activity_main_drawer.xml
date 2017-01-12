@@ -27,9 +27,9 @@
 				android:icon="@drawable/ic_menu_share"
 				android:title="NO RESPONSE"/>
 			<item
-				android:id="@+id/nav_send"
+				android:id="@+id/nav_GET_ssl"
 				android:icon="@drawable/ic_menu_send"
-				android:title="Send"/>
+				android:title="GET (SSL)"/>
 		</menu>
 	</item>
 

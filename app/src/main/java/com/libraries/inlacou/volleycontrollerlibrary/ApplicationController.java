@@ -30,7 +30,7 @@ public class ApplicationController extends Application {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		VolleyController.getInstance().init(this, new VolleyController.LogicCallbacks() {
+		VolleyController.getInstance().init(this, true, new VolleyController.LogicCallbacks() {
 
 			@Override
 			public void setTokens(JSONObject jsonObject) {

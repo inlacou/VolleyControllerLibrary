@@ -45,7 +45,10 @@ public class VolleyController {
 	private VolleyController() {
 	}
 
-	public void init(Application application, LogicCallbacks logicCallbacks){
+	public void init(Application application, boolean nukeSSLCerts, LogicCallbacks logicCallbacks){
+		if(nukeSSLCerts){
+			NukeSSLCerts.nuke();
+		}
 		errorMessage = application.getString(R.string.network_error);
 		this.logicCallbacks = logicCallbacks;
 		this.context = application;

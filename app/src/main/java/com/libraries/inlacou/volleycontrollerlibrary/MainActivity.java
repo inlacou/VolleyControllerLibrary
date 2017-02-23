@@ -14,6 +14,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.VolleyError;
 import com.google.gson.Gson;
@@ -99,6 +100,7 @@ public class MainActivity extends AppCompatActivity
 			VolleyController.getInstance().onCall(new InternetCall()
 					.setUrl("http://playground.byvapps.com/api/search?offset=0&limit=100")
 					.setMethod(InternetCall.Method.GET)
+					.setCode("code")
 					.addCallback(new VolleyController.IOCallbacks() {
 						@Override
 						public void onResponse(CustomResponse response, String code) {
@@ -219,6 +221,29 @@ public class MainActivity extends AppCompatActivity
 							textView.setText(VolleyController.getInstance().getMessage(error));
 						}
 					}));
+		} else if (id == R.id.nav_GET_activity_destroyed) {
+			VolleyController.getInstance().onCall(new InternetCall()
+					.setUrl("http://playground.byvapps.com/api/search?offset=0&limit=1000000")
+					.setMethod(InternetCall.Method.GET)
+					.setCancelTag(this)
+					.addCallback(new VolleyController.IOCallbacks() {
+						@Override
+						public void onResponse(CustomResponse response, String code) {
+							Log.d(DEBUG_TAG+"."+System.currentTimeMillis(), "Response received");
+							Log.d(DEBUG_TAG, "Code: " + code + " | CustomResponse: " + new Gson().toJson(response));
+							textView.setText(response.getData());
+							Log.d(DEBUG_TAG, "CustomResponse.headers: " + new Gson().toJson(response.getHeaders()));
+						}
+
+						@Override
+						public void onResponseError(VolleyError error, String code) {
+							Log.d(DEBUG_TAG, "Code: " + code + " | VolleyError: " + error);
+							textView.setText(VolleyController.getInstance().getMessage(error));
+						}
+					}));
+			textView = null;
+			VolleyController.getInstance().cancelRequest(this);
+			Toast.makeText(this, "Should not give any response. If it gives, it's an app broking one", Toast.LENGTH_SHORT).show();
 		}
 
 		DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

@@ -367,8 +367,37 @@ public class VolleyController {
 		}
 	}
 
-	public void cancelRequest(InternetCall internetCall) {
-		getRequestQueue().cancelAll(internetCall.getCode());
+	public void cancelRequest(final Object tag) {
+		RequestQueue.RequestFilter filter = new RequestQueue.RequestFilter() {
+			@Override
+			public boolean apply(Request<?> request) {
+				return request.getTag().equals(tag);
+			}
+		};
+		getRequestQueue().cancelAll(filter);
+		getSecondaryRequestQueue().cancelAll(filter);
+	}
+
+	public void cancelRequest(final InternetCall internetCall) {
+		RequestQueue.RequestFilter filter = new RequestQueue.RequestFilter() {
+			@Override
+			public boolean apply(Request<?> request) {
+				return ((String)request.getTag()).equalsIgnoreCase(internetCall.getCode());
+			}
+		};
+		getRequestQueue().cancelAll(filter);
+		getSecondaryRequestQueue().cancelAll(filter);
+	}
+
+	public void cancelAll() {
+		RequestQueue.RequestFilter filter = new RequestQueue.RequestFilter() {
+			@Override
+			public boolean apply(Request<?> request) {
+				return true;
+			}
+		};
+		getRequestQueue().cancelAll(filter);
+		getSecondaryRequestQueue().cancelAll(filter);
 	}
 
 	public interface IOCallbacks {

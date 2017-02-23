@@ -32,6 +32,7 @@ public class InternetCall {
 	private File file;
 	private ArrayList<VolleyController.IOCallbacks> callbacks;
 	private String fileKey;
+	private Object cancelTag;
 
 	public InternetCall() {
 		interceptors = new ArrayList<>();
@@ -214,7 +215,7 @@ public class InternetCall {
 				}
 			};
 			request.setRetryPolicy(retryPolicy);
-			if(code!=null) request.setTag(code);
+			if(cancelTag!=null) request.setTag(cancelTag);
 			return request;
 		}else{
 			Request request = new VolleyMultipartRequest(this.getMethod().value(), getUrl(), errorListener) {
@@ -249,7 +250,7 @@ public class InternetCall {
 				}
 			};
 			request.setRetryPolicy(retryPolicy);
-			if(code!=null) request.setTag(code);
+			if(cancelTag!=null) request.setTag(cancelTag);
 			return request;
 		}
 	}
@@ -326,6 +327,17 @@ public class InternetCall {
 		this.params.putAll(params);
 		return this;
 	}
+
+	public Object getCancelTag() {
+		return cancelTag;
+	}
+
+	public InternetCall setCancelTag(Object tag){
+		this.cancelTag = tag;
+		Log.d(DEBUG_TAG+".setCancelTag", "cancelTag: " + cancelTag);
+		return this;
+	}
+
 
 	public enum Method{
 		GET, POST, PUT, DELETE;

@@ -374,7 +374,11 @@ public class VolleyController {
 		RequestQueue.RequestFilter filter = new RequestQueue.RequestFilter() {
 			@Override
 			public boolean apply(Request<?> request) {
-				return request.getTag().equals(tag);
+				if(request.getTag()==null){
+					return false;
+				}else {
+					return request.getTag().equals(tag);
+				}
 			}
 		};
 		getRequestQueue().cancelAll(filter);

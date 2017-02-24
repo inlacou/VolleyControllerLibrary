@@ -368,21 +368,13 @@ public class VolleyController {
 	}
 
 	public void cancelRequest(final Object tag) {
+		if(tag==null){
+			return;
+		}
 		RequestQueue.RequestFilter filter = new RequestQueue.RequestFilter() {
 			@Override
 			public boolean apply(Request<?> request) {
 				return request.getTag().equals(tag);
-			}
-		};
-		getRequestQueue().cancelAll(filter);
-		getSecondaryRequestQueue().cancelAll(filter);
-	}
-
-	public void cancelRequest(final InternetCall internetCall) {
-		RequestQueue.RequestFilter filter = new RequestQueue.RequestFilter() {
-			@Override
-			public boolean apply(Request<?> request) {
-				return ((String)request.getTag()).equalsIgnoreCase(internetCall.getCode());
 			}
 		};
 		getRequestQueue().cancelAll(filter);

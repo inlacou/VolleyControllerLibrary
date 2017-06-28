@@ -10,7 +10,7 @@ Initialize the library on your Application class:
 		super.onCreate();
 		
 		// initialize
-		VolleyController.getInstance().init(this, new VolleyController.LogicCallbacks() {
+		VolleyController.getInstance().init(this, false, new VolleyController.LogicCallbacks() {
 			@Override
 			public void setTokens(String authToken, String refreshToken) {
 				//Save authToken

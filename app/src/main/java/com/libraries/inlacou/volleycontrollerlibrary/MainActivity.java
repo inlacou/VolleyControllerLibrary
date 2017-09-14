@@ -107,6 +107,7 @@ public class MainActivity extends AppCompatActivity
 							Log.d(DEBUG_TAG, "Code: " + code + " | CustomResponse: " + new Gson().toJson(response));
 							textView.setText(response.getData());
 							Log.d(DEBUG_TAG, "CustomResponse.headers: " + new Gson().toJson(response.getHeaders()));
+							Log.d(DEBUG_TAG, "CustomResponse.data: " + response.getData());
 						}
 
 						@Override
@@ -244,6 +245,26 @@ public class MainActivity extends AppCompatActivity
 			textView = null;
 			VolleyController.getInstance().cancelRequest(this);
 			Toast.makeText(this, "Should not give any response. If it gives, it's an app broking one", Toast.LENGTH_SHORT).show();
+		} else if (id == R.id.nav_GET_mirror) {
+			VolleyController.getInstance().onCall(new InternetCall()
+					.setUrl("http://178.62.73.124:3000/api/mirror?id=1&id=2&id=3&offset=0&limit=1000000")
+					.setMethod(InternetCall.Method.GET)
+					.setCancelTag(this)
+					.addCallback(new VolleyController.IOCallbacks() {
+						@Override
+						public void onResponse(CustomResponse response, String code) {
+							Log.d(DEBUG_TAG+"."+System.currentTimeMillis(), "Response received");
+							Log.d(DEBUG_TAG, "Code: " + code + " | CustomResponse: " + new Gson().toJson(response));
+							textView.setText(response.getData());
+							Log.d(DEBUG_TAG, "CustomResponse.headers: " + new Gson().toJson(response.getHeaders()));
+						}
+
+						@Override
+						public void onResponseError(VolleyError error, String code) {
+							Log.d(DEBUG_TAG, "Code: " + code + " | VolleyError: " + error);
+							textView.setText(VolleyController.getInstance().getMessage(error));
+						}
+					}));
 		}
 
 		DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

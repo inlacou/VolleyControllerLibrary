@@ -260,8 +260,13 @@ public class VolleyController {
 							new String(volleyError.networkResponse.data, "UTF-8").contains(logicCallbacks.getAuthTokenExpiredMessage()
 							)))) {
 						retry(code, ioCallbacks);
+						return;
 					}
-					return;
+					if(ioCallbacks !=null) {
+						for (int i=0; i<ioCallbacks.size(); i++){
+							if(ioCallbacks.get(i)!=null) ioCallbacks.get(i).onResponseError(volleyError, code);
+						}
+					}
 				}
 			} catch (Exception e) {
 				e.printStackTrace();

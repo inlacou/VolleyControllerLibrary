@@ -10,7 +10,7 @@ Initialize the library on your Application class:
 		super.onCreate();
 		
 		// initialize
-		VolleyController.getInstance().init(this, new VolleyController.LogicCallbacks() {
+		VolleyController.getInstance().init(this, false, new VolleyController.LogicCallbacks() {
 			@Override
 			public void setTokens(String authToken, String refreshToken) {
 				//Save authToken
@@ -105,4 +105,4 @@ There you go!
 
 # RX
 [![](https://jitpack.io/v/inlacou/VolleyControllerLibrary-RX.svg)](https://jitpack.io/#inlacou/VolleyControllerLibrary-RX)
-
+https://github.com/inlacou/VolleyControllerLibrary-RX

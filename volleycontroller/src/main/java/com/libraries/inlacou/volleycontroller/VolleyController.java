@@ -248,22 +248,22 @@ public class VolleyController {
 						(new String(volleyError.networkResponse.data, "UTF-8").contains("The access token provided has expired.")
 								|| new String(volleyError.networkResponse.data, "UTF-8").contains("The access token provided is invalid.")
 								|| new String(volleyError.networkResponse.data, "UTF-8").contains("UnauthorizedError: jwt expired")
-								|| (logicCallbacks.getAuthTokenExpiredMessage()!=null && !logicCallbacks.getAuthTokenExpiredMessage().isEmpty() && new String(volleyError.networkResponse.data, "UTF-8").contains(logicCallbacks.getAuthTokenExpiredMessage())))
+								|| (logicCallbacks.getAuthTokenExpiredMessage()!=null &&
+									!logicCallbacks.getAuthTokenExpiredMessage().isEmpty() &&
+									new String(volleyError.networkResponse.data, "UTF-8").contains(logicCallbacks.getAuthTokenExpiredMessage()
+									)
+								))
 						) {
-					Log.d(DEBUG_TAG + "."+metodo+".onResponseError", "Detectado un error 401, token caducado.");
-					retry(code, ioCallbacks);
-					return;
-				}if(volleyError.networkResponse.statusCode==400) {
-					Log.v(DEBUG_TAG + "."+metodo+".onResponseError", "Detectado un error 400, refresh-token posiblemente caducado.");
-					try{
-						JSONObject jsonObject = new JSONObject(getMessage(volleyError));
-						if(logicCallbacks.getRefreshTokenInvalidMessage()!=null && !logicCallbacks.getRefreshTokenInvalidMessage().isEmpty() && jsonObject.toString().contains(logicCallbacks.getRefreshTokenInvalidMessage())){
-							logicCallbacks.onRefreshTokenInvalid();
-						}if(logicCallbacks.getRefreshTokenExpiredMessage()!=null && !logicCallbacks.getRefreshTokenExpiredMessage().isEmpty() && jsonObject.toString().contains(logicCallbacks.getRefreshTokenExpiredMessage())){
-							logicCallbacks.onRefreshTokenExpired();
-						}
-					}catch (JSONException jsone){
+					Log.d(DEBUG_TAG + "."+metodo+".onResponseError", "Detectado un error 401, UNAUTHORIZED.");
+					JSONObject jsonObject = new JSONObject(getMessage(volleyError));
+					if(logicCallbacks.getRefreshTokenInvalidMessage()!=null && !logicCallbacks.getRefreshTokenInvalidMessage().isEmpty() && jsonObject.toString().contains(logicCallbacks.getRefreshTokenInvalidMessage())){
+						logicCallbacks.onRefreshTokenInvalid();
+					}if(logicCallbacks.getRefreshTokenExpiredMessage()!=null && !logicCallbacks.getRefreshTokenExpiredMessage().isEmpty() && jsonObject.toString().contains(logicCallbacks.getRefreshTokenExpiredMessage())){
+						logicCallbacks.onRefreshTokenExpired();
+					}else {
+						retry(code, ioCallbacks);
 					}
+					return;
 				}
 			} catch (Exception e) {
 				e.printStackTrace();

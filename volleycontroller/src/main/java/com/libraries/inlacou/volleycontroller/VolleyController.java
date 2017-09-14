@@ -244,23 +244,21 @@ public class VolleyController {
 			try {
 				Log.d(DEBUG_TAG + "."+metodo+".onResponseError", "Message: " + new String(volleyError.networkResponse.data, "UTF-8"));
 				Log.d(DEBUG_TAG + "."+metodo+".onResponseError", "StatusCode: " + volleyError.networkResponse.statusCode);
-				if(volleyError.networkResponse.statusCode==401 &&
-						(new String(volleyError.networkResponse.data, "UTF-8").contains("The access token provided has expired.")
-								|| new String(volleyError.networkResponse.data, "UTF-8").contains("The access token provided is invalid.")
-								|| new String(volleyError.networkResponse.data, "UTF-8").contains("UnauthorizedError: jwt expired")
-								|| (logicCallbacks.getAuthTokenExpiredMessage()!=null &&
-									!logicCallbacks.getAuthTokenExpiredMessage().isEmpty() &&
-									new String(volleyError.networkResponse.data, "UTF-8").contains(logicCallbacks.getAuthTokenExpiredMessage()
-									)
-								))
-						) {
+				if(volleyError.networkResponse.statusCode==401){
+
 					Log.d(DEBUG_TAG + "."+metodo+".onResponseError", "Detectado un error 401, UNAUTHORIZED.");
 					JSONObject jsonObject = new JSONObject(getMessage(volleyError));
 					if(logicCallbacks.getRefreshTokenInvalidMessage()!=null && !logicCallbacks.getRefreshTokenInvalidMessage().isEmpty() && jsonObject.toString().contains(logicCallbacks.getRefreshTokenInvalidMessage())){
 						logicCallbacks.onRefreshTokenInvalid();
 					}if(logicCallbacks.getRefreshTokenExpiredMessage()!=null && !logicCallbacks.getRefreshTokenExpiredMessage().isEmpty() && jsonObject.toString().contains(logicCallbacks.getRefreshTokenExpiredMessage())){
 						logicCallbacks.onRefreshTokenExpired();
-					}else {
+					}else if((new String(volleyError.networkResponse.data, "UTF-8").contains("The access token provided has expired.")
+							|| new String(volleyError.networkResponse.data, "UTF-8").contains("The access token provided is invalid.")
+							|| new String(volleyError.networkResponse.data, "UTF-8").contains("UnauthorizedError: jwt expired")
+							|| (logicCallbacks.getAuthTokenExpiredMessage()!=null &&
+							!logicCallbacks.getAuthTokenExpiredMessage().isEmpty() &&
+							new String(volleyError.networkResponse.data, "UTF-8").contains(logicCallbacks.getAuthTokenExpiredMessage()
+							)))) {
 						retry(code, ioCallbacks);
 					}
 					return;

@@ -20,6 +20,8 @@ public class CustomResponse {
 	private long networkTimeMs;
 	private Cache.Entry cacheHeaders;
 
+	public CustomResponse(){}
+
 	public CustomResponse(NetworkResponse response) {
 		try {
 			data = new String(response.data, "UTF-8");

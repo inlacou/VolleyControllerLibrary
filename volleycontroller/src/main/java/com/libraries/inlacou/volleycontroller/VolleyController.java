@@ -181,11 +181,26 @@ public class VolleyController {
 		Log.d(DEBUG_TAG+"."+method+".onStringResponse", "Code: " + code);
 		Log.d(DEBUG_TAG + "." + method + ".onStringResponse", "Method: " + method);
 		Log.d(DEBUG_TAG + "." + method + ".onStringResponse", "CustomResponse: " + response);
-		if(ioCallbacks!=null) {
-			for (int i=0; i<ioCallbacks.size(); i++){
-				if(ioCallbacks.get(i)!=null) ioCallbacks.get(i).onResponse(response, code);
+		if(response.getHeaders().containsKey("Location") &&
+				response.getHeaders().get("Location")!=null &&
+				!response.getHeaders().get("Location").isEmpty()){
+			InternetCall call = new InternetCall();
+			call.setUrl(response.getHeaders().get("Location"));
+			call.setMethod(InternetCall.Method.GET);
+			call.setCode(code);
+			if (ioCallbacks != null) {
+				for (int i = 0; i < ioCallbacks.size(); i++) {
+					if (ioCallbacks.get(i) != null) call.addCallback(ioCallbacks.get(i));
+				}
 			}
-			removeFromTemporaryList(code);
+			onCall(call);
+		}else {
+			if (ioCallbacks != null) {
+				for (int i = 0; i < ioCallbacks.size(); i++) {
+					if (ioCallbacks.get(i) != null) ioCallbacks.get(i).onResponse(response, code);
+				}
+				removeFromTemporaryList(code);
+			}
 		}
 	}
 
@@ -245,7 +260,6 @@ public class VolleyController {
 				Log.d(DEBUG_TAG + "."+metodo+".onResponseError", "Message: " + new String(volleyError.networkResponse.data, "UTF-8"));
 				Log.d(DEBUG_TAG + "."+metodo+".onResponseError", "StatusCode: " + volleyError.networkResponse.statusCode);
 				if(volleyError.networkResponse.statusCode==401){
-
 					Log.d(DEBUG_TAG + "."+metodo+".onResponseError", "Detectado un error 401, UNAUTHORIZED.");
 					JSONObject jsonObject = new JSONObject(getMessage(volleyError));
 					if(logicCallbacks.getRefreshTokenInvalidMessage()!=null && !logicCallbacks.getRefreshTokenInvalidMessage().isEmpty() && jsonObject.toString().contains(logicCallbacks.getRefreshTokenInvalidMessage())){
@@ -255,9 +269,9 @@ public class VolleyController {
 					}else if((new String(volleyError.networkResponse.data, "UTF-8").contains("The access token provided has expired.")
 							|| new String(volleyError.networkResponse.data, "UTF-8").contains("The access token provided is invalid.")
 							|| new String(volleyError.networkResponse.data, "UTF-8").contains("UnauthorizedError: jwt expired")
-							|| (logicCallbacks.getAuthTokenExpiredMessage()!=null &&
-							!logicCallbacks.getAuthTokenExpiredMessage().isEmpty() &&
-							new String(volleyError.networkResponse.data, "UTF-8").contains(logicCallbacks.getAuthTokenExpiredMessage()
+							|| (logicCallbacks.getAuthTokenExpiredMessage()!=null
+									&& !logicCallbacks.getAuthTokenExpiredMessage().isEmpty()
+									&& new String(volleyError.networkResponse.data, "UTF-8").contains(logicCallbacks.getAuthTokenExpiredMessage()
 							)))) {
 						retry(code, ioCallbacks);
 						return;
@@ -286,7 +300,7 @@ public class VolleyController {
 		}
 	}
 
-	private void retry(String code, ArrayList<IOCallbacks> ioCallbacks) throws Exception {
+	private void retry(String code, ArrayList<IOCallbacks> ioCallbacks) {
 		Log.d(DEBUG_TAG + ".retry", "En retry, desde una llamada con codigo: " + code + ".");
 		Log.d(DEBUG_TAG + ".retry", "Estamos ya refrescando el token? " + (updatingToken ? "Si." : "No."));
 

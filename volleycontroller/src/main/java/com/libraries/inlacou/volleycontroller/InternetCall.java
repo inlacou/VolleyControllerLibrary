@@ -33,6 +33,7 @@ public class InternetCall {
 	private ArrayList<VolleyController.IOCallbacks> callbacks;
 	private String fileKey;
 	private Object cancelTag;
+	private Boolean allowLocationRedirect = true;
 
 	public InternetCall() {
 		interceptors = new ArrayList<>();
@@ -102,6 +103,14 @@ public class InternetCall {
 		return this;
 	}
 
+	public boolean isAllowLocationRedirect(){
+		return allowLocationRedirect;
+	}
+	
+	public void setAllowLocationRedirect(Boolean b){
+		allowLocationRedirect = b;
+	}
+	
 	public String getCode() {
 		return code;
 	}

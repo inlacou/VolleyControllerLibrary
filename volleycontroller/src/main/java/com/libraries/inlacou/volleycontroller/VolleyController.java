@@ -158,7 +158,7 @@ public class VolleyController {
 		mRequestQueue.add(iCall.build(context, new Response.Listener<CustomResponse>() {
 			@Override
 			public void onResponse(CustomResponse s) {
-				VolleyController.this.onResponse(s, iCall.getCallbacks(), iCall.getCode(), iCall.getMethod());
+				VolleyController.this.onResponse(s, iCall.getCallbacks(), iCall.getCode(), iCall.getMethod(), iCall.isAllowLocationRedirect());
 			}
 		}, new Response.ErrorListener() {
 			@Override
@@ -177,11 +177,11 @@ public class VolleyController {
 		}
 	}
 
-	private void onResponseFinal(CustomResponse response, ArrayList<IOCallbacks> ioCallbacks, String code, InternetCall.Method method){
+	private void onResponseFinal(CustomResponse response, ArrayList<IOCallbacks> ioCallbacks, String code, InternetCall.Method method, boolean allowLocationRedirect){
 		Log.d(DEBUG_TAG+"."+method+".onStringResponse", "Code: " + code);
 		Log.d(DEBUG_TAG + "." + method + ".onStringResponse", "Method: " + method);
 		Log.d(DEBUG_TAG + "." + method + ".onStringResponse", "CustomResponse: " + response);
-		if(response.getHeaders().containsKey("Location") &&
+		if(allowLocationRedirect && response.getHeaders().containsKey("Location") &&
 				response.getHeaders().get("Location")!=null &&
 				!response.getHeaders().get("Location").isEmpty()){
 			InternetCall call = new InternetCall();
@@ -204,7 +204,7 @@ public class VolleyController {
 		}
 	}
 
-	private void onResponse(CustomResponse response, ArrayList<IOCallbacks> ioCallbacks, String code, InternetCall.Method method){
+	private void onResponse(CustomResponse response, ArrayList<IOCallbacks> ioCallbacks, String code, InternetCall.Method method, boolean allowLocationRedirect){
 		Log.d(DEBUG_TAG+"."+method+".onStringResponse", "Code: " + code);
 		Log.d(DEBUG_TAG+"."+method+".onStringResponse", "StatusCode: " + code);
 		Log.d(DEBUG_TAG + "." + method + ".onStringResponse", "CustomResponse: " + response);
@@ -232,7 +232,7 @@ public class VolleyController {
 				updatingToken=false;
 				getRequestQueue().start();
 			} else {
-				onResponseFinal(response, ioCallbacks, code, method);
+				onResponseFinal(response, ioCallbacks, code, method, allowLocationRedirect);
 			}
 		}
 	}
@@ -243,7 +243,7 @@ public class VolleyController {
 				.build(context, new Response.Listener<CustomResponse>() {
 					@Override
 					public void onResponse(CustomResponse s) {
-						VolleyController.this.onResponseFinal(s, iCall.getCallbacks(), iCall.getCode(), iCall.getMethod());
+						VolleyController.this.onResponseFinal(s, iCall.getCallbacks(), iCall.getCode(), iCall.getMethod(), iCall.isAllowLocationRedirect());
 					}
 				}, new Response.ErrorListener() {
 					@Override

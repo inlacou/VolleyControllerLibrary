@@ -107,8 +107,9 @@ public class InternetCall {
 		return allowLocationRedirect;
 	}
 	
-	public void setAllowLocationRedirect(Boolean b){
+	public InternetCall setAllowLocationRedirect(Boolean b){
 		allowLocationRedirect = b;
+		return this;
 	}
 	
 	public String getCode() {

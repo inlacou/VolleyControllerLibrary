@@ -156,7 +156,7 @@ public class InternetCall {
 			}
 		}
 
-		if(rawBody!=null && !rawBody.isEmpty()) {
+		if(rawBody!=null && !rawBody.isEmpty() && rawBody.contains(oldAccessToken)) {
 			rawBody = rawBody.replace(oldAccessToken, newAccessToken);
 		}
 
@@ -217,9 +217,10 @@ public class InternetCall {
 
 				@Override
 				public byte[] getBody() throws AuthFailureError {
-					if (InternetCall.this.getRawBody() != null && !InternetCall.this.getRawBody().isEmpty()) {
-						Log.v(DEBUG_TAG + "." + InternetCall.this.getMethod(), "body -> " + InternetCall.this.getRawBody());
-						return InternetCall.this.getRawBody().getBytes();
+					String body = InternetCall.this.getRawBody();
+					if (body != null && !body.isEmpty()) {
+						Log.v(DEBUG_TAG + "." + InternetCall.this.getMethod(), "body -> " + body);
+						return body.getBytes();
 					}
 					return super.getBody();
 				}

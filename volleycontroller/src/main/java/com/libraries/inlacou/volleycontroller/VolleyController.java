@@ -56,14 +56,14 @@ public class VolleyController {
 		if (mRequestQueue == null) {
 			//InputStream keystore = getResources().openRawResource(R.raw.boletus); //For SSH
 
-			mRequestQueue = Volley.newRequestQueue(application
+			mRequestQueue = Volley.newRequestQueue(application, new CustomHurlStack()
 					//, new ExtHttpClientStack(new SslHttpClient(keystore, "ss64kdn4", 443)) //For SSH
 			);
 		}
 		if (mSecondaryRequestQueue == null) {
 			//InputStream keystore = getResources().openRawResource(R.raw.boletus); //For SSH
 
-			mSecondaryRequestQueue = Volley.newRequestQueue(application
+			mSecondaryRequestQueue = Volley.newRequestQueue(application, new CustomHurlStack()
 					//, new ExtHttpClientStack(new SslHttpClient(keystore, "ss64kdn4", 443)) //For SSH
 			);
 		}

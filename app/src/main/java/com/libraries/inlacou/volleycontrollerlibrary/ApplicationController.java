@@ -50,17 +50,17 @@ public class ApplicationController extends Application {
 			public InternetCall doRefreshToken(ArrayList<VolleyController.IOCallbacks> ioCallbacks) {
 				return null;
 			}
-
+			
 			@Override
-			public void onRefreshTokenInvalid() {
-
+			public void onRefreshTokenInvalid(VolleyError volleyError, String code) {
+			
 			}
-
+			
 			@Override
-			public void onRefreshTokenExpired() {
-
+			public void onRefreshTokenExpired(VolleyError volleyError, String code) {
+			
 			}
-
+			
 			@Override
 			public String getRefreshTokenInvalidMessage() {
 				return null;

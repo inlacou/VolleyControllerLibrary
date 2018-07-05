@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import timber.log.Timber;
+
 /**
  * Created by inlacou on 10/09/14.
  */
@@ -156,7 +158,7 @@ public class InternetCall {
 			}
 		}
 
-		if(rawBody!=null && !rawBody.isEmpty()) {
+		if(rawBody!=null && !rawBody.isEmpty() && rawBody.contains(oldAccessToken)) {
 			rawBody = rawBody.replace(oldAccessToken, newAccessToken);
 		}
 
@@ -217,9 +219,10 @@ public class InternetCall {
 
 				@Override
 				public byte[] getBody() throws AuthFailureError {
-					if (InternetCall.this.getRawBody() != null && !InternetCall.this.getRawBody().isEmpty()) {
-						Log.v(DEBUG_TAG + "." + InternetCall.this.getMethod(), "body -> " + InternetCall.this.getRawBody());
-						return InternetCall.this.getRawBody().getBytes();
+					String body = InternetCall.this.getRawBody();
+					if (body != null && !body.isEmpty()) {
+						Log.v(DEBUG_TAG + "." + InternetCall.this.getMethod(), "body -> " + body);
+						return body.getBytes();
 					}
 					return super.getBody();
 				}
@@ -344,7 +347,7 @@ public class InternetCall {
 
 	public InternetCall setCancelTag(Object tag){
 		this.cancelTag = tag;
-		Log.d(DEBUG_TAG+".setCancelTag", "cancelTag: " + cancelTag);
+		Timber.d(DEBUG_TAG+".setCancelTag | cancelTag: " + cancelTag);
 		return this;
 	}
 

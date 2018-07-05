@@ -256,6 +256,7 @@ public class VolleyController {
 
 	private void onResponseError(VolleyError volleyError, ArrayList<IOCallbacks> ioCallbacks, String code, String metodo){
 		if(volleyError.networkResponse!=null){
+			Timber.d(DEBUG_TAG+"."+metodo+".onResponseError code: "+code);
 			Timber.d(DEBUG_TAG+"."+metodo+".onResponseError StatusCode: "+volleyError.networkResponse.statusCode);
 			try {
 				Timber.d(DEBUG_TAG + "."+metodo+".onResponseError Message: " + new String(volleyError.networkResponse.data, "UTF-8"));

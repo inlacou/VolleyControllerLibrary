@@ -29,7 +29,7 @@ import timber.log.Timber;
 public class VolleyController {
 
 	public static final String JSON_POST_UPDATE_ACCESS_TOKEN = "network_logic_json_post_update_access_token";
-	private static final String DEBUG_TAG = VolleyController.class.getName();
+	private static final String DEBUG_TAG = VolleyController.class.getSimpleName();
 
 	private static ArrayList<InternetCall> temporaryCallQueue = new ArrayList<InternetCall>();
 	private static boolean updatingToken = false;
@@ -79,14 +79,14 @@ public class VolleyController {
 		interceptors.add(interceptor);
 	}
 
-	public RequestQueue getRequestQueue(){
+	private RequestQueue getRequestQueue(){
 		// lazy initialize the request queue, the queue instance will be
 		// created when it is accessed for the first time
 		return mRequestQueue;
 	}
 
 
-	public RequestQueue getSecondaryRequestQueue(){
+	private RequestQueue getSecondaryRequestQueue(){
 		// lazy initialize the request queue, the queue instance will be
 		// created when it is accessed for the first time
 		return mSecondaryRequestQueue;
@@ -132,7 +132,7 @@ public class VolleyController {
 	}
 
 	public void onCall(final InternetCall iCall){
-		onCall(iCall, false);
+		onCall(iCall, true);
 	}
 
 	private void onCall(final InternetCall iCall, boolean primaryRequestQueue){
@@ -240,8 +240,7 @@ public class VolleyController {
 	}
 
 	private void doCall(final InternetCall iCall, String oldAccessToken, String accessToken, final String metodo){
-		RequestQueue rq = getRequestQueue();
-		rq.add(iCall.replaceAccessToken(oldAccessToken, accessToken)
+		getRequestQueue().add(iCall.replaceAccessToken(oldAccessToken, accessToken)
 				.build(context, new Response.Listener<CustomResponse>() {
 					@Override
 					public void onResponse(CustomResponse s) {
@@ -293,16 +292,14 @@ public class VolleyController {
 	}
 
 	private void retry(String code, ArrayList<IOCallbacks> ioCallbacks) {
-		Timber.d(DEBUG_TAG + ".retry En retry, desde una llamada con codigo: " + code + ".");
-		Timber.d(DEBUG_TAG + ".retry Estamos ya refrescando el token? " + (updatingToken ? "Si." : "No."));
-
-		RequestQueue mRequestQueue = getRequestQueue();
+		Timber.d(DEBUG_TAG + ".retry | En retry, desde una llamada con codigo: " + code + ".");
+		Timber.d(DEBUG_TAG + ".retry | Estamos ya refrescando el token? " + (updatingToken ? "Si." : "No."));
 
 		if(!updatingToken) {
 			updatingToken=true;
-			Timber.d(DEBUG_TAG + ".retry Paramos la request queue principal");
-			mRequestQueue.stop();
-			VolleyController.getInstance().onCall(logicCallbacks.doRefreshToken(ioCallbacks).setCode(JSON_POST_UPDATE_ACCESS_TOKEN));
+			Timber.d(DEBUG_TAG + ".retry | Paramos la request queue principal");
+			getRequestQueue().stop();
+			VolleyController.getInstance().onCall(logicCallbacks.doRefreshToken(ioCallbacks).setCode(JSON_POST_UPDATE_ACCESS_TOKEN), false);
 		}
 	}
 

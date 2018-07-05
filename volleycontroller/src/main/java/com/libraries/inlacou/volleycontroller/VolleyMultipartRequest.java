@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
+import timber.log.Timber;
+
 /**
  * Custom request to make multipart header and upload file.
  *
@@ -137,7 +139,7 @@ public class VolleyMultipartRequest extends Request {
 	 * @throws IOException
 	 */
 	private void textParse(DataOutputStream dataOutputStream, Map<String, String> params, String encoding) throws IOException {
-		Log.d(DEBUG_TAG, "textParse");
+		Timber.d(DEBUG_TAG + " textParse");
 		try {
 			for (Map.Entry<String, String> entry : params.entrySet()) {
 				buildTextPart(dataOutputStream, entry.getKey(), entry.getValue());
@@ -169,7 +171,7 @@ public class VolleyMultipartRequest extends Request {
 	 * @throws IOException
 	 */
 	private void buildTextPart(DataOutputStream dataOutputStream, String parameterName, String parameterValue) throws IOException {
-		Log.d(DEBUG_TAG, "buildTextPart " + parameterName + " -> " + parameterValue);
+		Timber.d(DEBUG_TAG + " buildTextPart " + parameterName + " -> " + parameterValue);
 		dataOutputStream.writeBytes(twoHyphens + boundary + lineEnd);
 		dataOutputStream.writeBytes("Content-Disposition: form-data; name=\"" + parameterName + "\"" + lineEnd);
 		//dataOutputStream.writeBytes("Content-Type: text/plain; charset=UTF-8" + lineEnd);

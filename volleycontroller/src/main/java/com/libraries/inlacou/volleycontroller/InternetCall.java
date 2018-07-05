@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import timber.log.Timber;
+
 /**
  * Created by inlacou on 10/09/14.
  */
@@ -345,7 +347,7 @@ public class InternetCall {
 
 	public InternetCall setCancelTag(Object tag){
 		this.cancelTag = tag;
-		Log.d(DEBUG_TAG+".setCancelTag", "cancelTag: " + cancelTag);
+		Timber.d(DEBUG_TAG+".setCancelTag | cancelTag: " + cancelTag);
 		return this;
 	}
 

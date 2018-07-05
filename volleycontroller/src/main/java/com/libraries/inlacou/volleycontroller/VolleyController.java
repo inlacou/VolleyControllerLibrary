@@ -21,6 +21,8 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Map;
 
+import timber.log.Timber;
+
 /**
  * Created by inlacou on 25/11/14.
  */
@@ -138,18 +140,18 @@ public class VolleyController {
 			return;
 		}
 		iCall.addInterceptors(interceptors);
-		Log.d(DEBUG_TAG + ".onCall." + iCall.getMethod(), "Request para la " + (primaryRequestQueue ? "primera" : "segunda") + " requestQueue creada con codigo: " + iCall.getCode());
-		Log.d(DEBUG_TAG + ".onCall."+iCall.getMethod()+"", "Making "+iCall.getMethod()+" call to url: " + iCall.getUrl());
+		Timber.d(DEBUG_TAG + ".onCall." + iCall.getMethod()  + " Request para la " + (primaryRequestQueue ? "primera" : "segunda") + " requestQueue creada con codigo: " + iCall.getCode());
+		Timber.d(DEBUG_TAG + ".onCall."+iCall.getMethod()+" Making "+iCall.getMethod()+" call to url: " + iCall.getUrl());
 		logMap(iCall.getHeaders(), "header", iCall.getMethod().toString());
 		logMap(iCall.getParams(), "params", iCall.getMethod().toString());
-		Log.d(DEBUG_TAG+".onCall."+iCall.getMethod()+"", "Rawbody: "+iCall.getRawBody());
+		Timber.d(DEBUG_TAG+".onCall."+iCall.getMethod()+" Rawbody: "+iCall.getRawBody());
 
 		RequestQueue mRequestQueue;
 		if(primaryRequestQueue) {
-			Log.d(DEBUG_TAG, "primaryRequestQueue");
+			Timber.d(DEBUG_TAG + " primaryRequestQueue");
 			mRequestQueue = getRequestQueue();
 		}else{
-			Log.d(DEBUG_TAG, "secondaryRequestQueue");
+			Timber.d(DEBUG_TAG  + " secondaryRequestQueue");
 			mRequestQueue = this.getSecondaryRequestQueue();
 		}
 		if(iCall.getCode()!=null && !iCall.getCode().equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN)) {
@@ -169,18 +171,18 @@ public class VolleyController {
 	}
 
 	private void logMap(Map<String, String> map, String type, String method) {
-		Log.d(DEBUG_TAG+".onCall."+method+"", "Map(" + type + ") = " + map);
+		Timber.d(DEBUG_TAG+".onCall."+method+" Map(" + type + ") = " + map);
 		if(map!=null) {
 			for (String s : map.keySet()) {
-				Log.d(DEBUG_TAG + ".onCall." + method + "", type + " parameter " + s + ": " + map.get(s));
+				Timber.d(DEBUG_TAG + ".onCall." + method + " " + type + " parameter " + s + ": " + map.get(s));
 			}
 		}
 	}
 
 	private void onResponseFinal(CustomResponse response, ArrayList<IOCallbacks> ioCallbacks, String code, InternetCall.Method method, boolean allowLocationRedirect){
-		Log.d(DEBUG_TAG+"."+method+".onStringResponse", "Code: " + code);
-		Log.d(DEBUG_TAG + "." + method + ".onStringResponse", "Method: " + method);
-		Log.d(DEBUG_TAG + "." + method + ".onStringResponse", "CustomResponse: " + response);
+		Timber.d(DEBUG_TAG+"."+method+".onStringResponse Code: " + code);
+		Timber.d(DEBUG_TAG + "." + method + ".onStringResponse Method: " + method);
+		Timber.d(DEBUG_TAG + "." + method + ".onStringResponse CustomResponse: " + response);
 		if(allowLocationRedirect && response.getHeaders().containsKey("Location") &&
 				response.getHeaders().get("Location")!=null &&
 				!response.getHeaders().get("Location").isEmpty()){
@@ -205,12 +207,12 @@ public class VolleyController {
 	}
 
 	private void onResponse(CustomResponse response, ArrayList<IOCallbacks> ioCallbacks, String code, InternetCall.Method method, boolean allowLocationRedirect){
-		Log.d(DEBUG_TAG+"."+method+".onStringResponse", "Code: " + code);
-		Log.d(DEBUG_TAG+"."+method+".onStringResponse", "StatusCode: " + code);
-		Log.d(DEBUG_TAG + "." + method + ".onStringResponse", "CustomResponse: " + response);
+		Timber.d(DEBUG_TAG+"."+method+".onStringResponse Code: " + code);
+		Timber.d(DEBUG_TAG+"."+method+".onStringResponse StatusCode: " + code);
+		Timber.d(DEBUG_TAG + "." + method + ".onStringResponse CustomResponse: " + response);
 		if(ioCallbacks!=null) {
 			if(code!=null && code.equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN)){
-				Log.d(DEBUG_TAG+"."+method+".onJsonResponse", "Recibida la respuesta al codigo " + JSON_POST_UPDATE_ACCESS_TOKEN +
+				Timber.d(DEBUG_TAG+"."+method+".onJsonResponse Recibida la respuesta al codigo " + JSON_POST_UPDATE_ACCESS_TOKEN +
 						", updating tokens. | " + response);
 				//Save old authToken
 				String oldAccessToken = logicCallbacks.getAuthToken();
@@ -224,7 +226,7 @@ public class VolleyController {
 				}
 				//Get new authToken
 				String accessToken = logicCallbacks.getAuthToken();
-				Log.d(DEBUG_TAG+"."+method+".onJsonResponse", "Continuando llamadas almacenadas. Numero: " + temporaryCallQueue.size());
+				Timber.d(DEBUG_TAG+"."+method+".onJsonResponse Continuando llamadas almacenadas. Numero: " + temporaryCallQueue.size());
 
 				for(int i = 0; i<temporaryCallQueue.size(); i++){
 					doCall(temporaryCallQueue.get(i), oldAccessToken, accessToken, method.toString());
@@ -255,17 +257,17 @@ public class VolleyController {
 
 	private void onResponseError(VolleyError volleyError, ArrayList<IOCallbacks> ioCallbacks, String code, String metodo){
 		if(volleyError.networkResponse!=null){
-			Log.d(DEBUG_TAG+"."+metodo+".onResponseError", "StatusCode: "+volleyError.networkResponse.statusCode);
+			Timber.d(DEBUG_TAG+"."+metodo+".onResponseError StatusCode: "+volleyError.networkResponse.statusCode);
 			try {
-				Log.d(DEBUG_TAG + "."+metodo+".onResponseError", "Message: " + new String(volleyError.networkResponse.data, "UTF-8"));
-				Log.d(DEBUG_TAG + "."+metodo+".onResponseError", "StatusCode: " + volleyError.networkResponse.statusCode);
+				Timber.d(DEBUG_TAG + "."+metodo+".onResponseError Message: " + new String(volleyError.networkResponse.data, "UTF-8"));
+				Timber.d(DEBUG_TAG + "."+metodo+".onResponseError StatusCode: " + volleyError.networkResponse.statusCode);
 				if(volleyError.networkResponse.statusCode==401){
-					Log.d(DEBUG_TAG + "."+metodo+".onResponseError", "Detectado un error 401, UNAUTHORIZED.");
+					Timber.d(DEBUG_TAG + "."+metodo+".onResponseError Detectado un error 401, UNAUTHORIZED.");
 					JSONObject jsonObject = new JSONObject(getMessage(volleyError));
 					if(logicCallbacks.getRefreshTokenInvalidMessage()!=null && !logicCallbacks.getRefreshTokenInvalidMessage().isEmpty() && jsonObject.toString().contains(logicCallbacks.getRefreshTokenInvalidMessage())){
-						logicCallbacks.onRefreshTokenInvalid();
+						logicCallbacks.onRefreshTokenInvalid(volleyError, code);
 					}if(logicCallbacks.getRefreshTokenExpiredMessage()!=null && !logicCallbacks.getRefreshTokenExpiredMessage().isEmpty() && jsonObject.toString().contains(logicCallbacks.getRefreshTokenExpiredMessage())){
-						logicCallbacks.onRefreshTokenExpired();
+						logicCallbacks.onRefreshTokenExpired(volleyError, code);
 					}else if((new String(volleyError.networkResponse.data, "UTF-8").contains("The access token provided has expired.")
 							|| new String(volleyError.networkResponse.data, "UTF-8").contains("The access token provided is invalid.")
 							|| new String(volleyError.networkResponse.data, "UTF-8").contains("UnauthorizedError: jwt expired")
@@ -281,7 +283,7 @@ public class VolleyController {
 				e.printStackTrace();
 			}
 		}else{
-			Log.d(DEBUG_TAG+"."+metodo+".onResponseError", "networkResponse==null");
+			Timber.d(DEBUG_TAG+"."+metodo+".onResponseError networkResponse==null");
 		}
 		if(ioCallbacks !=null) {
 			for (int i=0; i<ioCallbacks.size(); i++){
@@ -291,14 +293,14 @@ public class VolleyController {
 	}
 
 	private void retry(String code, ArrayList<IOCallbacks> ioCallbacks) {
-		Log.d(DEBUG_TAG + ".retry", "En retry, desde una llamada con codigo: " + code + ".");
-		Log.d(DEBUG_TAG + ".retry", "Estamos ya refrescando el token? " + (updatingToken ? "Si." : "No."));
+		Timber.d(DEBUG_TAG + ".retry En retry, desde una llamada con codigo: " + code + ".");
+		Timber.d(DEBUG_TAG + ".retry Estamos ya refrescando el token? " + (updatingToken ? "Si." : "No."));
 
 		RequestQueue mRequestQueue = getRequestQueue();
 
 		if(!updatingToken) {
 			updatingToken=true;
-			Log.d(DEBUG_TAG + ".retry", "Paramos la request queue principal");
+			Timber.d(DEBUG_TAG + ".retry Paramos la request queue principal");
 			mRequestQueue.stop();
 			VolleyController.getInstance().onCall(logicCallbacks.doRefreshToken(ioCallbacks).setCode(JSON_POST_UPDATE_ACCESS_TOKEN));
 		}
@@ -428,9 +430,9 @@ public class VolleyController {
 
 		InternetCall doRefreshToken(ArrayList<IOCallbacks> ioCallbacks);
 
-		void onRefreshTokenInvalid();
+		void onRefreshTokenInvalid(VolleyError volleyError, String code);
 
-		void onRefreshTokenExpired();
+		void onRefreshTokenExpired(VolleyError volleyError, String code);
 
 		String getRefreshTokenInvalidMessage();
 

@@ -140,11 +140,6 @@ public class VolleyController {
 			return;
 		}
 		iCall.addInterceptors(interceptors);
-		Timber.d(DEBUG_TAG + ".onCall." + iCall.getMethod()  + " Request para la " + (primaryRequestQueue ? "primera" : "segunda") + " requestQueue creada con codigo: " + iCall.getCode());
-		Timber.d(DEBUG_TAG + ".onCall."+iCall.getMethod()+" Making "+iCall.getMethod()+" call to url: " + iCall.getUrl());
-		logMap(iCall.getHeaders(), "header", iCall.getMethod().toString());
-		logMap(iCall.getParams(), "params", iCall.getMethod().toString());
-		Timber.d(DEBUG_TAG+".onCall."+iCall.getMethod()+" Rawbody: "+iCall.getRawBody());
 
 		RequestQueue mRequestQueue;
 		if(primaryRequestQueue) {
@@ -157,6 +152,14 @@ public class VolleyController {
 		if(iCall.getCode()!=null && !iCall.getCode().equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN)) {
 			temporaryCallQueue.add(iCall);
 		}
+		iCall.prebuild();
+		
+		Timber.d(DEBUG_TAG + ".onCall." + iCall.getMethod()  + " Request para la " + (primaryRequestQueue ? "primera" : "segunda") + " requestQueue creada con codigo: " + iCall.getCode());
+		Timber.d(DEBUG_TAG + ".onCall."+iCall.getMethod()+" Making "+iCall.getMethod()+" call to url: " + iCall.getUrl());
+		logMap(iCall.getHeaders(), "header", iCall.getMethod().toString());
+		logMap(iCall.getParams(), "params", iCall.getMethod().toString());
+		Timber.d(DEBUG_TAG+".onCall."+iCall.getMethod()+" Rawbody: "+iCall.getRawBody());
+		
 		mRequestQueue.add(iCall.build(context, new Response.Listener<CustomResponse>() {
 			@Override
 			public void onResponse(CustomResponse s) {
@@ -241,7 +244,7 @@ public class VolleyController {
 
 	private void doCall(final InternetCall iCall, String oldAccessToken, String accessToken, final String metodo){
 		getRequestQueue().add(iCall.replaceAccessToken(oldAccessToken, accessToken)
-				.build(context, new Response.Listener<CustomResponse>() {
+				.prebuild().build(context, new Response.Listener<CustomResponse>() {
 					@Override
 					public void onResponse(CustomResponse s) {
 						VolleyController.this.onResponseFinal(s, iCall.getCallbacks(), iCall.getCode(), iCall.getMethod(), iCall.isAllowLocationRedirect());

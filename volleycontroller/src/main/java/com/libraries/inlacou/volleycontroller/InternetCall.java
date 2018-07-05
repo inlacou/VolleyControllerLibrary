@@ -165,7 +165,7 @@ public class InternetCall {
 		return this;
 	}
 
-	public Request build(final Context context, final com.android.volley.Response.Listener<CustomResponse> listener, com.android.volley.Response.ErrorListener errorListener) {
+	public InternetCall prebuild(){
 		while(params.values().remove(null));
 		while(headers.values().remove(null));
 		if(rawBody==null){
@@ -174,6 +174,10 @@ public class InternetCall {
 		for(int i=0; i<interceptors.size(); i++){
 			interceptors.get(i).intercept(this);
 		}
+		return this;
+	}
+	
+	public Request build(final Context context, final com.android.volley.Response.Listener<CustomResponse> listener, com.android.volley.Response.ErrorListener errorListener) {
 		if(file==null) {
 			Request request = new CustomRequest(this.getMethod().value(), getUrl(), errorListener) {
 				@Override

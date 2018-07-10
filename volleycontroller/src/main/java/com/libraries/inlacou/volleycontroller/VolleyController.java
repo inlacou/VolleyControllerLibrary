@@ -210,33 +210,31 @@ public class VolleyController {
 	}
 
 	private void onResponse(CustomResponse response, ArrayList<IOCallbacks> ioCallbacks, String code, InternetCall.Method method, boolean allowLocationRedirect){
-		Timber.d(DEBUG_TAG+"."+method+".onStringResponse Code: " + code);
-		Timber.d(DEBUG_TAG+"."+method+".onStringResponse StatusCode: " + code);
-		Timber.d(DEBUG_TAG + "." + method + ".onStringResponse CustomResponse: " + response);
-		if(ioCallbacks!=null) {
-			if(code!=null && code.equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN)){
-				Timber.d(DEBUG_TAG+"."+method+".onJsonResponse Recibida la respuesta al codigo " + JSON_POST_UPDATE_ACCESS_TOKEN +
-						", updating tokens. | " + response);
-				//Save old authToken
-				String oldAccessToken = logicCallbacks.getAuthToken();
-				//Read answer
-				try {
-					JSONObject jsonObject = new JSONObject(response.getData());
-					//Save new tokens
-					logicCallbacks.setTokens(jsonObject);
-				} catch (JSONException e) {
-					e.printStackTrace();
-				}
-				//Get new authToken
-				String accessToken = logicCallbacks.getAuthToken();
-				Timber.d(DEBUG_TAG+"."+method+".onJsonResponse Continuando llamadas almacenadas. Numero: " + temporaryCallQueue.size());
+		Timber.d(DEBUG_TAG + "." + method + ".onStringResponse | Code: " + code + " | CustomResponse: " + response + " | ioCallbacks: " + ioCallbacks);
+		if(code!=null && code.equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN)){
+			Timber.d(DEBUG_TAG+"."+method+".onJsonResponse Recibida la respuesta al codigo " + JSON_POST_UPDATE_ACCESS_TOKEN +
+					", updating tokens. | " + response);
+			//Save old authToken
+			String oldAccessToken = logicCallbacks.getAuthToken();
+			//Read answer
+			try {
+				JSONObject jsonObject = new JSONObject(response.getData());
+				//Save new tokens
+				logicCallbacks.setTokens(jsonObject);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+			//Get new authToken
+			String accessToken = logicCallbacks.getAuthToken();
+			Timber.d(DEBUG_TAG+"."+method+".onJsonResponse Continuando llamadas almacenadas. Numero: " + temporaryCallQueue.size());
 
-				for(int i = 0; i<temporaryCallQueue.size(); i++){
-					doCall(temporaryCallQueue.get(i), oldAccessToken, accessToken, method.toString());
-				}
-				updatingToken=false;
-				getRequestQueue().start();
-			} else {
+			for(int i = 0; i<temporaryCallQueue.size(); i++){
+				doCall(temporaryCallQueue.get(i), oldAccessToken, accessToken, method.toString());
+			}
+			updatingToken=false;
+			getRequestQueue().start();
+		} else {
+			if(ioCallbacks!=null) {
 				onResponseFinal(response, ioCallbacks, code, method, allowLocationRedirect);
 			}
 		}

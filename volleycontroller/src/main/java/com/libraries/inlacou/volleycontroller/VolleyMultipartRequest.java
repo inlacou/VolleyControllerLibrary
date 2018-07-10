@@ -1,7 +1,5 @@
 package com.libraries.inlacou.volleycontroller;
 
-import android.util.Log;
-
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
 import com.android.volley.ParseError;
@@ -112,8 +110,9 @@ public class VolleyMultipartRequest extends Request {
 	@Override
 	protected Response parseNetworkResponse(NetworkResponse response) {
 		try {
+			CustomResponse customResponse = new CustomResponse(response);
 			return Response.success(
-					new CustomResponse(response),
+					customResponse,
 					HttpHeaderParser.parseCacheHeaders(response));
 		} catch (Exception e) {
 			return Response.error(new ParseError(e));

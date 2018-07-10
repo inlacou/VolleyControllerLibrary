@@ -188,6 +188,7 @@ public class InternetCall {
 				@Override
 				protected Response<CustomResponse> parseNetworkResponse(NetworkResponse response) {
 					CustomResponse newCustomResponse = new CustomResponse(response);
+					newCustomResponse.setCode(code);
 					//we set here the response (the object received by deliverResponse);
 					return com.android.volley.Response.success(newCustomResponse, newCustomResponse.getChacheHeaders());
 				}
@@ -244,6 +245,7 @@ public class InternetCall {
 				@Override
 				protected Response<CustomResponse> parseNetworkResponse(NetworkResponse response) {
 					CustomResponse newCustomResponse = new CustomResponse(response);
+					newCustomResponse.setCode(code);
 					//we set here the response (the object received by deliverResponse);
 					return com.android.volley.Response.success(newCustomResponse, newCustomResponse.getChacheHeaders());
 				}

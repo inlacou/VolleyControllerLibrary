@@ -19,6 +19,7 @@ public class CustomResponse {
 	private String data;
 	private long networkTimeMs;
 	private Cache.Entry cacheHeaders;
+	private String code;
 
 	public CustomResponse(){}
 
@@ -58,7 +59,15 @@ public class CustomResponse {
 	public Cache.Entry getChacheHeaders() {
 		return cacheHeaders;
 	}
-
+	
+	public String getCode() {
+		return code;
+	}
+	
+	public void setCode(String code) {
+		this.code = code;
+	}
+	
 	@Override
 	public String toString() {
 		return "{ \"statusCode\": " + statusCode +

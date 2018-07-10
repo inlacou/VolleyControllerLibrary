@@ -210,8 +210,8 @@ public class VolleyController {
 
 	private void onResponse(CustomResponse response, ArrayList<IOCallbacks> ioCallbacks, String code, InternetCall.Method method, boolean allowLocationRedirect){
 		Timber.d(DEBUG_TAG+"."+method+".onStringResponse | Code: " + code + " | CustomResponse: " + response + " | ioCallbacks: " + ioCallbacks);
-		if(code!=null) Timber.d(DEBUG_TAG+"."+method+".onStringResponse | Code: " + code + " | equals: " + code.equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN) + " | JSON_POST_UPDATE_ACCESS_TOKEN: " + JSON_POST_UPDATE_ACCESS_TOKEN);
-		if(code!=null && code.equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN)){
+		if(code!=null) Timber.d(DEBUG_TAG+"."+method+".onStringResponse | Code: " + code + " | equals: " + code.trim().equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN.trim()) + " | JSON_POST_UPDATE_ACCESS_TOKEN: " + JSON_POST_UPDATE_ACCESS_TOKEN);
+		if(code!=null && code.trim().equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN.trim())){
 			Timber.d(DEBUG_TAG+"."+method+".onStringResponse Recibida la respuesta al codigo " + JSON_POST_UPDATE_ACCESS_TOKEN + ", updating tokens. | " + response);
 			//Save old authToken
 			String oldAccessToken = logicCallbacks.getAuthToken();

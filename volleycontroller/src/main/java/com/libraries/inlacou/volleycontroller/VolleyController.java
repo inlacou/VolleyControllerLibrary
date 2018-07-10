@@ -2,7 +2,6 @@ package com.libraries.inlacou.volleycontroller;
 
 import android.app.Application;
 import android.content.Context;
-import android.util.Log;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -210,10 +209,10 @@ public class VolleyController {
 	}
 
 	private void onResponse(CustomResponse response, ArrayList<IOCallbacks> ioCallbacks, String code, InternetCall.Method method, boolean allowLocationRedirect){
-		Timber.d(DEBUG_TAG + "." + method + ".onStringResponse | Code: " + code + " | CustomResponse: " + response + " | ioCallbacks: " + ioCallbacks);
+		Timber.d(DEBUG_TAG+"."+method+".onStringResponse | Code: " + code + " | CustomResponse: " + response + " | ioCallbacks: " + ioCallbacks);
+		if(code!=null) Timber.d(DEBUG_TAG+"."+method+".onStringResponse | Code: " + code + " | equals: " + code.equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN) + " | JSON_POST_UPDATE_ACCESS_TOKEN: " + JSON_POST_UPDATE_ACCESS_TOKEN);
 		if(code!=null && code.equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN)){
-			Timber.d(DEBUG_TAG+"."+method+".onJsonResponse Recibida la respuesta al codigo " + JSON_POST_UPDATE_ACCESS_TOKEN +
-					", updating tokens. | " + response);
+			Timber.d(DEBUG_TAG+"."+method+".onStringResponse Recibida la respuesta al codigo " + JSON_POST_UPDATE_ACCESS_TOKEN + ", updating tokens. | " + response);
 			//Save old authToken
 			String oldAccessToken = logicCallbacks.getAuthToken();
 			//Read answer
@@ -226,10 +225,10 @@ public class VolleyController {
 			}
 			//Get new authToken
 			String accessToken = logicCallbacks.getAuthToken();
-			Timber.d(DEBUG_TAG+"."+method+".onJsonResponse Continuando llamadas almacenadas. Numero: " + temporaryCallQueue.size());
+			Timber.d(DEBUG_TAG+"."+method+".onStringResponse Continuando llamadas almacenadas. Numero: " + temporaryCallQueue.size());
 
 			for(int i = 0; i<temporaryCallQueue.size(); i++){
-				doCall(temporaryCallQueue.get(i), oldAccessToken, accessToken, method.toString());
+				doCallReplaceTokens(temporaryCallQueue.get(i), oldAccessToken, accessToken, method.toString());
 			}
 			updatingToken=false;
 			getRequestQueue().start();
@@ -240,7 +239,7 @@ public class VolleyController {
 		}
 	}
 
-	private void doCall(final InternetCall iCall, String oldAccessToken, String accessToken, final String metodo){
+	private void doCallReplaceTokens(final InternetCall iCall, String oldAccessToken, String accessToken, final String metodo){
 		getRequestQueue().add(iCall.replaceAccessToken(oldAccessToken, accessToken)
 				.prebuild().build(context, new Response.Listener<CustomResponse>() {
 					@Override

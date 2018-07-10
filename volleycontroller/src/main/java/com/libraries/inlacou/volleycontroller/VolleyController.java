@@ -146,7 +146,7 @@ public class VolleyController {
 			mRequestQueue = getRequestQueue();
 		}else{
 			Timber.d(DEBUG_TAG  + " secondaryRequestQueue");
-			mRequestQueue = this.getSecondaryRequestQueue();
+			mRequestQueue = getSecondaryRequestQueue();
 		}
 		if(iCall.getCode()!=null && !iCall.getCode().equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN)) {
 			temporaryCallQueue.add(iCall);
@@ -210,9 +210,8 @@ public class VolleyController {
 
 	private void onResponse(CustomResponse response, ArrayList<IOCallbacks> ioCallbacks, String code, InternetCall.Method method, boolean allowLocationRedirect){
 		Timber.d(DEBUG_TAG+"."+method+".onStringResponse | Code: " + code + " | CustomResponse: " + response + " | ioCallbacks: " + ioCallbacks);
-		if(code!=null) Timber.d(DEBUG_TAG+"."+method+".onStringResponse | Code: " + code + " | equals: " + code.trim().equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN.trim()) + " | JSON_POST_UPDATE_ACCESS_TOKEN: " + JSON_POST_UPDATE_ACCESS_TOKEN);
 		if(code!=null && code.trim().equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN.trim())){
-			Timber.d(DEBUG_TAG+"."+method+".onStringResponse Recibida la respuesta al codigo " + JSON_POST_UPDATE_ACCESS_TOKEN + ", updating tokens. | " + response);
+			Timber.d(DEBUG_TAG+"."+method+".onStringResponse | Recibida la respuesta al codigo " + JSON_POST_UPDATE_ACCESS_TOKEN + ", updating tokens. | " + response);
 			//Save old authToken
 			String oldAccessToken = logicCallbacks.getAuthToken();
 			//Read answer
@@ -225,7 +224,7 @@ public class VolleyController {
 			}
 			//Get new authToken
 			String accessToken = logicCallbacks.getAuthToken();
-			Timber.d(DEBUG_TAG+"."+method+".onStringResponse Continuando llamadas almacenadas. Numero: " + temporaryCallQueue.size());
+			Timber.d(DEBUG_TAG+"."+method+".onStringResponse | Continuando llamadas almacenadas. Numero: " + temporaryCallQueue.size());
 
 			for(int i = 0; i<temporaryCallQueue.size(); i++){
 				doCallReplaceTokens(temporaryCallQueue.get(i), oldAccessToken, accessToken, method.toString());
@@ -256,13 +255,11 @@ public class VolleyController {
 
 	private void onResponseError(VolleyError volleyError, ArrayList<IOCallbacks> ioCallbacks, String code, String metodo){
 		if(volleyError.networkResponse!=null){
-			Timber.d(DEBUG_TAG+"."+metodo+".onResponseError code: "+code);
-			Timber.d(DEBUG_TAG+"."+metodo+".onResponseError StatusCode: "+volleyError.networkResponse.statusCode);
+			Timber.d(DEBUG_TAG+"."+metodo+".onResponseError | code: "+code + "| StatusCode: "+volleyError.networkResponse.statusCode);
 			try {
-				Timber.d(DEBUG_TAG + "."+metodo+".onResponseError Message: " + new String(volleyError.networkResponse.data, "UTF-8"));
-				Timber.d(DEBUG_TAG + "."+metodo+".onResponseError StatusCode: " + volleyError.networkResponse.statusCode);
+				Timber.d(DEBUG_TAG + "."+metodo+".onResponseError | Message: " + new String(volleyError.networkResponse.data, "UTF-8"));
 				if(volleyError.networkResponse.statusCode==401){
-					Timber.d(DEBUG_TAG + "."+metodo+".onResponseError Detectado un error 401, UNAUTHORIZED.");
+					Timber.d(DEBUG_TAG + "."+metodo+".onResponseError | Detectado un error 401, UNAUTHORIZED.");
 					JSONObject jsonObject = new JSONObject(getMessage(volleyError));
 					if(logicCallbacks.getRefreshTokenInvalidMessage()!=null && !logicCallbacks.getRefreshTokenInvalidMessage().isEmpty() && jsonObject.toString().contains(logicCallbacks.getRefreshTokenInvalidMessage())){
 						logicCallbacks.onRefreshTokenInvalid(volleyError, code);
@@ -300,6 +297,7 @@ public class VolleyController {
 			updatingToken=true;
 			Timber.d(DEBUG_TAG + ".retry | Paramos la request queue principal");
 			getRequestQueue().stop();
+			cancelAllPrimaryQueue();
 			VolleyController.getInstance().onCall(logicCallbacks.doRefreshToken(ioCallbacks).setCode(JSON_POST_UPDATE_ACCESS_TOKEN), false);
 		}
 	}
@@ -392,7 +390,7 @@ public class VolleyController {
 		getSecondaryRequestQueue().cancelAll(filter);
 	}
 
-	public void cancelAll() {
+	public void cancelAllPrimaryQueue() {
 		RequestQueue.RequestFilter filter = new RequestQueue.RequestFilter() {
 			@Override
 			public boolean apply(Request<?> request) {
@@ -400,7 +398,21 @@ public class VolleyController {
 			}
 		};
 		getRequestQueue().cancelAll(filter);
+	}
+
+	public void cancelAllSecondaryQueue() {
+		RequestQueue.RequestFilter filter = new RequestQueue.RequestFilter() {
+			@Override
+			public boolean apply(Request<?> request) {
+				return true;
+			}
+		};
 		getSecondaryRequestQueue().cancelAll(filter);
+	}
+
+	public void cancelAll() {
+		cancelAllPrimaryQueue();
+		cancelAllSecondaryQueue();
 	}
 
 	public interface IOCallbacks {

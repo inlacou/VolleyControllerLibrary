@@ -2,7 +2,6 @@ package com.libraries.inlacou.volleycontroller;
 
 import android.app.Application;
 import android.content.Context;
-import android.util.Log;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -21,13 +20,15 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Map;
 
+import timber.log.Timber;
+
 /**
  * Created by inlacou on 25/11/14.
  */
 public class VolleyController {
 
 	public static final String JSON_POST_UPDATE_ACCESS_TOKEN = "network_logic_json_post_update_access_token";
-	private static final String DEBUG_TAG = VolleyController.class.getName();
+	private static final String DEBUG_TAG = VolleyController.class.getSimpleName();
 
 	private static ArrayList<InternetCall> temporaryCallQueue = new ArrayList<InternetCall>();
 	private static boolean updatingToken = false;
@@ -56,14 +57,14 @@ public class VolleyController {
 		if (mRequestQueue == null) {
 			//InputStream keystore = getResources().openRawResource(R.raw.boletus); //For SSH
 
-			mRequestQueue = Volley.newRequestQueue(application
+			mRequestQueue = Volley.newRequestQueue(application, new CustomHurlStack()
 					//, new ExtHttpClientStack(new SslHttpClient(keystore, "ss64kdn4", 443)) //For SSH
 			);
 		}
 		if (mSecondaryRequestQueue == null) {
 			//InputStream keystore = getResources().openRawResource(R.raw.boletus); //For SSH
 
-			mSecondaryRequestQueue = Volley.newRequestQueue(application
+			mSecondaryRequestQueue = Volley.newRequestQueue(application, new CustomHurlStack()
 					//, new ExtHttpClientStack(new SslHttpClient(keystore, "ss64kdn4", 443)) //For SSH
 			);
 		}
@@ -77,14 +78,14 @@ public class VolleyController {
 		interceptors.add(interceptor);
 	}
 
-	public RequestQueue getRequestQueue(){
+	private RequestQueue getRequestQueue(){
 		// lazy initialize the request queue, the queue instance will be
 		// created when it is accessed for the first time
 		return mRequestQueue;
 	}
 
 
-	public RequestQueue getSecondaryRequestQueue(){
+	private RequestQueue getSecondaryRequestQueue(){
 		// lazy initialize the request queue, the queue instance will be
 		// created when it is accessed for the first time
 		return mSecondaryRequestQueue;
@@ -130,7 +131,7 @@ public class VolleyController {
 	}
 
 	public void onCall(final InternetCall iCall){
-		onCall(iCall, false);
+		onCall(iCall, true);
 	}
 
 	private void onCall(final InternetCall iCall, boolean primaryRequestQueue){
@@ -138,23 +139,26 @@ public class VolleyController {
 			return;
 		}
 		iCall.addInterceptors(interceptors);
-		Log.d(DEBUG_TAG + ".onCall." + iCall.getMethod(), "Request para la " + (primaryRequestQueue ? "primera" : "segunda") + " requestQueue creada con codigo: " + iCall.getCode());
-		Log.d(DEBUG_TAG + ".onCall."+iCall.getMethod()+"", "Making "+iCall.getMethod()+" call to url: " + iCall.getUrl());
-		logMap(iCall.getHeaders(), "header", iCall.getMethod().toString());
-		logMap(iCall.getParams(), "params", iCall.getMethod().toString());
-		Log.d(DEBUG_TAG+".onCall."+iCall.getMethod()+"", "Rawbody: "+iCall.getRawBody());
 
 		RequestQueue mRequestQueue;
 		if(primaryRequestQueue) {
-			Log.d(DEBUG_TAG, "primaryRequestQueue");
+			Timber.d(DEBUG_TAG + " primaryRequestQueue");
 			mRequestQueue = getRequestQueue();
 		}else{
-			Log.d(DEBUG_TAG, "secondaryRequestQueue");
-			mRequestQueue = this.getSecondaryRequestQueue();
+			Timber.d(DEBUG_TAG  + " secondaryRequestQueue");
+			mRequestQueue = getSecondaryRequestQueue();
 		}
 		if(iCall.getCode()!=null && !iCall.getCode().equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN)) {
 			temporaryCallQueue.add(iCall);
 		}
+		iCall.prebuild();
+		
+		Timber.d(DEBUG_TAG + ".onCall." + iCall.getMethod()  + " Request para la " + (primaryRequestQueue ? "primera" : "segunda") + " requestQueue creada con codigo: " + iCall.getCode());
+		Timber.d(DEBUG_TAG + ".onCall."+iCall.getMethod()+" Making "+iCall.getMethod()+" call to url: " + iCall.getUrl());
+		logMap(iCall.getHeaders(), "header", iCall.getMethod().toString());
+		logMap(iCall.getParams(), "params", iCall.getMethod().toString());
+		Timber.d(DEBUG_TAG+".onCall."+iCall.getMethod()+" Rawbody: "+iCall.getRawBody());
+		
 		mRequestQueue.add(iCall.build(context, new Response.Listener<CustomResponse>() {
 			@Override
 			public void onResponse(CustomResponse s) {
@@ -169,18 +173,18 @@ public class VolleyController {
 	}
 
 	private void logMap(Map<String, String> map, String type, String method) {
-		Log.d(DEBUG_TAG+".onCall."+method+"", "Map(" + type + ") = " + map);
+		Timber.d(DEBUG_TAG+".onCall."+method+" Map(" + type + ") = " + map);
 		if(map!=null) {
 			for (String s : map.keySet()) {
-				Log.d(DEBUG_TAG + ".onCall." + method + "", type + " parameter " + s + ": " + map.get(s));
+				Timber.d(DEBUG_TAG + ".onCall." + method + " " + type + " parameter " + s + ": " + map.get(s));
 			}
 		}
 	}
 
 	private void onResponseFinal(CustomResponse response, ArrayList<IOCallbacks> ioCallbacks, String code, InternetCall.Method method, boolean allowLocationRedirect){
-		Log.d(DEBUG_TAG+"."+method+".onStringResponse", "Code: " + code);
-		Log.d(DEBUG_TAG + "." + method + ".onStringResponse", "Method: " + method);
-		Log.d(DEBUG_TAG + "." + method + ".onStringResponse", "CustomResponse: " + response);
+		Timber.d(DEBUG_TAG+"."+method+".onStringResponse Code: " + code);
+		Timber.d(DEBUG_TAG + "." + method + ".onStringResponse Method: " + method);
+		Timber.d(DEBUG_TAG + "." + method + ".onStringResponse CustomResponse: " + response);
 		if(allowLocationRedirect && response.getHeaders().containsKey("Location") &&
 				response.getHeaders().get("Location")!=null &&
 				!response.getHeaders().get("Location").isEmpty()){
@@ -205,42 +209,38 @@ public class VolleyController {
 	}
 
 	private void onResponse(CustomResponse response, ArrayList<IOCallbacks> ioCallbacks, String code, InternetCall.Method method, boolean allowLocationRedirect){
-		Log.d(DEBUG_TAG+"."+method+".onStringResponse", "Code: " + code);
-		Log.d(DEBUG_TAG+"."+method+".onStringResponse", "StatusCode: " + code);
-		Log.d(DEBUG_TAG + "." + method + ".onStringResponse", "CustomResponse: " + response);
-		if(ioCallbacks!=null) {
-			if(code!=null && code.equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN)){
-				Log.d(DEBUG_TAG+"."+method+".onJsonResponse", "Recibida la respuesta al codigo " + JSON_POST_UPDATE_ACCESS_TOKEN +
-						", updating tokens. | " + response);
-				//Save old authToken
-				String oldAccessToken = logicCallbacks.getAuthToken();
-				//Read answer
-				try {
-					JSONObject jsonObject = new JSONObject(response.getData());
-					//Save new tokens
-					logicCallbacks.setTokens(jsonObject);
-				} catch (JSONException e) {
-					e.printStackTrace();
-				}
-				//Get new authToken
-				String accessToken = logicCallbacks.getAuthToken();
-				Log.d(DEBUG_TAG+"."+method+".onJsonResponse", "Continuando llamadas almacenadas. Numero: " + temporaryCallQueue.size());
+		Timber.d(DEBUG_TAG+"."+method+".onStringResponse | Code: " + code + " | CustomResponse: " + response + " | ioCallbacks: " + ioCallbacks);
+		if(code!=null && code.trim().equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN.trim())){
+			Timber.d(DEBUG_TAG+"."+method+".onStringResponse | Recibida la respuesta al codigo " + JSON_POST_UPDATE_ACCESS_TOKEN + ", updating tokens. | " + response);
+			//Save old authToken
+			String oldAccessToken = logicCallbacks.getAuthToken();
+			//Read answer
+			try {
+				JSONObject jsonObject = new JSONObject(response.getData());
+				//Save new tokens
+				logicCallbacks.setTokens(jsonObject);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+			//Get new authToken
+			String accessToken = logicCallbacks.getAuthToken();
+			Timber.d(DEBUG_TAG+"."+method+".onStringResponse | Continuando llamadas almacenadas. Numero: " + temporaryCallQueue.size());
 
-				for(int i = 0; i<temporaryCallQueue.size(); i++){
-					doCall(temporaryCallQueue.get(i), oldAccessToken, accessToken, method.toString());
-				}
-				updatingToken=false;
-				getRequestQueue().start();
-			} else {
+			for(int i = 0; i<temporaryCallQueue.size(); i++){
+				doCallReplaceTokens(temporaryCallQueue.get(i), oldAccessToken, accessToken, method.toString());
+			}
+			updatingToken=false;
+			getRequestQueue().start();
+		} else {
+			if(ioCallbacks!=null) {
 				onResponseFinal(response, ioCallbacks, code, method, allowLocationRedirect);
 			}
 		}
 	}
 
-	private void doCall(final InternetCall iCall, String oldAccessToken, String accessToken, final String metodo){
-		RequestQueue rq = getRequestQueue();
-		rq.add(iCall.replaceAccessToken(oldAccessToken, accessToken)
-				.build(context, new Response.Listener<CustomResponse>() {
+	private void doCallReplaceTokens(final InternetCall iCall, String oldAccessToken, String accessToken, final String metodo){
+		getRequestQueue().add(iCall.replaceAccessToken(oldAccessToken, accessToken)
+				.prebuild().build(context, new Response.Listener<CustomResponse>() {
 					@Override
 					public void onResponse(CustomResponse s) {
 						VolleyController.this.onResponseFinal(s, iCall.getCallbacks(), iCall.getCode(), iCall.getMethod(), iCall.isAllowLocationRedirect());
@@ -255,17 +255,16 @@ public class VolleyController {
 
 	private void onResponseError(VolleyError volleyError, ArrayList<IOCallbacks> ioCallbacks, String code, String metodo){
 		if(volleyError.networkResponse!=null){
-			Log.d(DEBUG_TAG+"."+metodo+".onResponseError", "StatusCode: "+volleyError.networkResponse.statusCode);
+			Timber.d(DEBUG_TAG+"."+metodo+".onResponseError | code: "+code + "| StatusCode: "+volleyError.networkResponse.statusCode);
 			try {
-				Log.d(DEBUG_TAG + "."+metodo+".onResponseError", "Message: " + new String(volleyError.networkResponse.data, "UTF-8"));
-				Log.d(DEBUG_TAG + "."+metodo+".onResponseError", "StatusCode: " + volleyError.networkResponse.statusCode);
+				Timber.d(DEBUG_TAG + "."+metodo+".onResponseError | Message: " + new String(volleyError.networkResponse.data, "UTF-8"));
 				if(volleyError.networkResponse.statusCode==401){
-					Log.d(DEBUG_TAG + "."+metodo+".onResponseError", "Detectado un error 401, UNAUTHORIZED.");
+					Timber.d(DEBUG_TAG + "."+metodo+".onResponseError | Detectado un error 401, UNAUTHORIZED.");
 					JSONObject jsonObject = new JSONObject(getMessage(volleyError));
 					if(logicCallbacks.getRefreshTokenInvalidMessage()!=null && !logicCallbacks.getRefreshTokenInvalidMessage().isEmpty() && jsonObject.toString().contains(logicCallbacks.getRefreshTokenInvalidMessage())){
-						logicCallbacks.onRefreshTokenInvalid();
+						logicCallbacks.onRefreshTokenInvalid(volleyError, code);
 					}if(logicCallbacks.getRefreshTokenExpiredMessage()!=null && !logicCallbacks.getRefreshTokenExpiredMessage().isEmpty() && jsonObject.toString().contains(logicCallbacks.getRefreshTokenExpiredMessage())){
-						logicCallbacks.onRefreshTokenExpired();
+						logicCallbacks.onRefreshTokenExpired(volleyError, code);
 					}else if((new String(volleyError.networkResponse.data, "UTF-8").contains("The access token provided has expired.")
 							|| new String(volleyError.networkResponse.data, "UTF-8").contains("The access token provided is invalid.")
 							|| new String(volleyError.networkResponse.data, "UTF-8").contains("UnauthorizedError: jwt expired")
@@ -281,7 +280,7 @@ public class VolleyController {
 				e.printStackTrace();
 			}
 		}else{
-			Log.d(DEBUG_TAG+"."+metodo+".onResponseError", "networkResponse==null");
+			Timber.d(DEBUG_TAG+"."+metodo+".onResponseError networkResponse==null");
 		}
 		if(ioCallbacks !=null) {
 			for (int i=0; i<ioCallbacks.size(); i++){
@@ -291,16 +290,15 @@ public class VolleyController {
 	}
 
 	private void retry(String code, ArrayList<IOCallbacks> ioCallbacks) {
-		Log.d(DEBUG_TAG + ".retry", "En retry, desde una llamada con codigo: " + code + ".");
-		Log.d(DEBUG_TAG + ".retry", "Estamos ya refrescando el token? " + (updatingToken ? "Si." : "No."));
-
-		RequestQueue mRequestQueue = getRequestQueue();
+		Timber.d(DEBUG_TAG + ".retry | En retry, desde una llamada con codigo: " + code + ".");
+		Timber.d(DEBUG_TAG + ".retry | Estamos ya refrescando el token? " + (updatingToken ? "Si." : "No."));
 
 		if(!updatingToken) {
 			updatingToken=true;
-			Log.d(DEBUG_TAG + ".retry", "Paramos la request queue principal");
-			mRequestQueue.stop();
-			VolleyController.getInstance().onCall(logicCallbacks.doRefreshToken(ioCallbacks).setCode(JSON_POST_UPDATE_ACCESS_TOKEN));
+			Timber.d(DEBUG_TAG + ".retry | Paramos la request queue principal");
+			getRequestQueue().stop();
+			cancelAllPrimaryQueue();
+			VolleyController.getInstance().onCall(logicCallbacks.doRefreshToken(ioCallbacks).setCode(JSON_POST_UPDATE_ACCESS_TOKEN), false);
 		}
 	}
 
@@ -392,7 +390,7 @@ public class VolleyController {
 		getSecondaryRequestQueue().cancelAll(filter);
 	}
 
-	public void cancelAll() {
+	public void cancelAllPrimaryQueue() {
 		RequestQueue.RequestFilter filter = new RequestQueue.RequestFilter() {
 			@Override
 			public boolean apply(Request<?> request) {
@@ -400,7 +398,21 @@ public class VolleyController {
 			}
 		};
 		getRequestQueue().cancelAll(filter);
+	}
+
+	public void cancelAllSecondaryQueue() {
+		RequestQueue.RequestFilter filter = new RequestQueue.RequestFilter() {
+			@Override
+			public boolean apply(Request<?> request) {
+				return true;
+			}
+		};
 		getSecondaryRequestQueue().cancelAll(filter);
+	}
+
+	public void cancelAll() {
+		cancelAllPrimaryQueue();
+		cancelAllSecondaryQueue();
 	}
 
 	public interface IOCallbacks {
@@ -428,9 +440,9 @@ public class VolleyController {
 
 		InternetCall doRefreshToken(ArrayList<IOCallbacks> ioCallbacks);
 
-		void onRefreshTokenInvalid();
+		void onRefreshTokenInvalid(VolleyError volleyError, String code);
 
-		void onRefreshTokenExpired();
+		void onRefreshTokenExpired(VolleyError volleyError, String code);
 
 		String getRefreshTokenInvalidMessage();
 

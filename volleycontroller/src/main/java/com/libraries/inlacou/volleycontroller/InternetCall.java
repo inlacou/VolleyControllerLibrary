@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import timber.log.Timber;
+
 /**
  * Created by inlacou on 10/09/14.
  */
@@ -142,6 +144,7 @@ public class InternetCall {
 				Map.Entry pair = (Map.Entry) it.next();
 				if(pair.getValue().toString().contains(oldAccessToken)){
 					headers.put(pair.getKey().toString(), pair.getValue().toString().replace(oldAccessToken, newAccessToken));
+					Timber.d("code " + code + " | replaced " + oldAccessToken + " with " + newAccessToken + " on header " + pair.getKey().toString());
 				}
 			}
 		}
@@ -152,18 +155,19 @@ public class InternetCall {
 				Map.Entry pair = (Map.Entry) it.next();
 				if(pair.getValue().toString().contains(oldAccessToken)){
 					params.put(pair.getKey().toString(), pair.getValue().toString().replace(oldAccessToken, newAccessToken));
+					Timber.d("replaced " + oldAccessToken + " with " + newAccessToken + " on param " + pair.getKey().toString());
 				}
 			}
 		}
 
-		if(rawBody!=null && !rawBody.isEmpty()) {
+		if(rawBody!=null && !rawBody.isEmpty() && rawBody.contains(oldAccessToken)) {
 			rawBody = rawBody.replace(oldAccessToken, newAccessToken);
 		}
 
 		return this;
 	}
 
-	public Request build(final Context context, final com.android.volley.Response.Listener<CustomResponse> listener, com.android.volley.Response.ErrorListener errorListener) {
+	public InternetCall prebuild(){
 		while(params.values().remove(null));
 		while(headers.values().remove(null));
 		if(rawBody==null){
@@ -172,6 +176,10 @@ public class InternetCall {
 		for(int i=0; i<interceptors.size(); i++){
 			interceptors.get(i).intercept(this);
 		}
+		return this;
+	}
+	
+	public Request build(final Context context, final com.android.volley.Response.Listener<CustomResponse> listener, com.android.volley.Response.ErrorListener errorListener) {
 		if(file==null) {
 			Request request = new CustomRequest(this.getMethod().value(), getUrl(), errorListener) {
 				@Override
@@ -182,6 +190,7 @@ public class InternetCall {
 				@Override
 				protected Response<CustomResponse> parseNetworkResponse(NetworkResponse response) {
 					CustomResponse newCustomResponse = new CustomResponse(response);
+					newCustomResponse.setCode(code);
 					//we set here the response (the object received by deliverResponse);
 					return com.android.volley.Response.success(newCustomResponse, newCustomResponse.getChacheHeaders());
 				}
@@ -217,9 +226,10 @@ public class InternetCall {
 
 				@Override
 				public byte[] getBody() throws AuthFailureError {
-					if (InternetCall.this.getRawBody() != null && !InternetCall.this.getRawBody().isEmpty()) {
-						Log.v(DEBUG_TAG + "." + InternetCall.this.getMethod(), "body -> " + InternetCall.this.getRawBody());
-						return InternetCall.this.getRawBody().getBytes();
+					String body = InternetCall.this.getRawBody();
+					if (body != null && !body.isEmpty()) {
+						Log.v(DEBUG_TAG + "." + InternetCall.this.getMethod(), "body -> " + body);
+						return body.getBytes();
 					}
 					return super.getBody();
 				}
@@ -237,6 +247,7 @@ public class InternetCall {
 				@Override
 				protected Response<CustomResponse> parseNetworkResponse(NetworkResponse response) {
 					CustomResponse newCustomResponse = new CustomResponse(response);
+					newCustomResponse.setCode(code);
 					//we set here the response (the object received by deliverResponse);
 					return com.android.volley.Response.success(newCustomResponse, newCustomResponse.getChacheHeaders());
 				}
@@ -344,7 +355,7 @@ public class InternetCall {
 
 	public InternetCall setCancelTag(Object tag){
 		this.cancelTag = tag;
-		Log.d(DEBUG_TAG+".setCancelTag", "cancelTag: " + cancelTag);
+		Timber.d(DEBUG_TAG+".setCancelTag | cancelTag: " + cancelTag);
 		return this;
 	}
 

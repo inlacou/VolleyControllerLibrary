@@ -144,7 +144,6 @@ public class InternetCall {
 				Map.Entry pair = (Map.Entry) it.next();
 				if(pair.getValue().toString().contains(oldAccessToken)){
 					headers.put(pair.getKey().toString(), pair.getValue().toString().replace(oldAccessToken, newAccessToken));
-					Timber.d("code " + code + " | replaced " + oldAccessToken + " with " + newAccessToken + " on header " + pair.getKey().toString());
 				}
 			}
 		}
@@ -155,7 +154,6 @@ public class InternetCall {
 				Map.Entry pair = (Map.Entry) it.next();
 				if(pair.getValue().toString().contains(oldAccessToken)){
 					params.put(pair.getKey().toString(), pair.getValue().toString().replace(oldAccessToken, newAccessToken));
-					Timber.d("replaced " + oldAccessToken + " with " + newAccessToken + " on param " + pair.getKey().toString());
 				}
 			}
 		}
@@ -355,7 +353,6 @@ public class InternetCall {
 
 	public InternetCall setCancelTag(Object tag){
 		this.cancelTag = tag;
-		Timber.d(DEBUG_TAG+".setCancelTag | cancelTag: " + cancelTag);
 		return this;
 	}
 

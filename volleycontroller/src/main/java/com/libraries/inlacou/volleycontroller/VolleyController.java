@@ -142,10 +142,8 @@ public class VolleyController {
 
 		RequestQueue mRequestQueue;
 		if(primaryRequestQueue) {
-			Timber.d(DEBUG_TAG + " primaryRequestQueue");
 			mRequestQueue = getRequestQueue();
 		}else{
-			Timber.d(DEBUG_TAG  + " secondaryRequestQueue");
 			mRequestQueue = getSecondaryRequestQueue();
 		}
 		if(iCall.getCode()!=null && !iCall.getCode().equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN)) {
@@ -153,8 +151,7 @@ public class VolleyController {
 		}
 		iCall.prebuild();
 		
-		Timber.d(DEBUG_TAG + ".onCall." + iCall.getMethod()  + " Request para la " + (primaryRequestQueue ? "primera" : "segunda") + " requestQueue creada con codigo: " + iCall.getCode());
-		Timber.d(DEBUG_TAG + ".onCall."+iCall.getMethod()+" Making "+iCall.getMethod()+" call to url: " + iCall.getUrl());
+		Timber.d(DEBUG_TAG + ".onCall."+iCall.getMethod()+" url: " + iCall.getUrl() + " | code: " + iCall.getCode() + " | requestQueue " + (primaryRequestQueue ? "primary" : "secondary"));
 		logMap(iCall.getHeaders(), "header", iCall.getMethod().toString());
 		logMap(iCall.getParams(), "params", iCall.getMethod().toString());
 		Timber.d(DEBUG_TAG+".onCall."+iCall.getMethod()+" Rawbody: "+iCall.getRawBody());
@@ -173,18 +170,18 @@ public class VolleyController {
 	}
 
 	private void logMap(Map<String, String> map, String type, String method) {
-		Timber.d(DEBUG_TAG+".onCall."+method+" Map(" + type + ") = " + map);
 		if(map!=null) {
+			if(map.isEmpty()) Timber.d(DEBUG_TAG+".onCall."+method+" Map(" + type + ") = " + map);
 			for (String s : map.keySet()) {
 				Timber.d(DEBUG_TAG + ".onCall." + method + " " + type + " parameter " + s + ": " + map.get(s));
 			}
+		}else{
+			Timber.d(DEBUG_TAG+".onCall."+method+" Map(" + type + ") = " + null);
 		}
 	}
 
 	private void onResponseFinal(CustomResponse response, ArrayList<IOCallbacks> ioCallbacks, String code, InternetCall.Method method, boolean allowLocationRedirect){
-		Timber.d(DEBUG_TAG+"."+method+".onStringResponse Code: " + code);
-		Timber.d(DEBUG_TAG + "." + method + ".onStringResponse Method: " + method);
-		Timber.d(DEBUG_TAG + "." + method + ".onStringResponse CustomResponse: " + response);
+		Timber.d(DEBUG_TAG+"."+method+".onResponseFinal | Method: " + method + " | Code: " + code + "| CustomResponse: " + response);
 		if(allowLocationRedirect && response.getHeaders().containsKey("Location") &&
 				response.getHeaders().get("Location")!=null &&
 				!response.getHeaders().get("Location").isEmpty()){
@@ -209,9 +206,9 @@ public class VolleyController {
 	}
 
 	private void onResponse(CustomResponse response, ArrayList<IOCallbacks> ioCallbacks, String code, InternetCall.Method method, boolean allowLocationRedirect){
-		Timber.d(DEBUG_TAG+"."+method+".onStringResponse | Code: " + code + " | CustomResponse: " + response + " | ioCallbacks: " + ioCallbacks);
+		Timber.d(DEBUG_TAG+"."+method+".onResponse | Code: " + code + " | CustomResponse: " + response);
 		if(code!=null && code.trim().equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN.trim())){
-			Timber.d(DEBUG_TAG+"."+method+".onStringResponse | Recibida la respuesta al codigo " + JSON_POST_UPDATE_ACCESS_TOKEN + ", updating tokens. | " + response);
+			Timber.d(DEBUG_TAG+"."+method+".onResponse | Recibida la respuesta al codigo " + JSON_POST_UPDATE_ACCESS_TOKEN + ", updating tokens.");
 			//Save old authToken
 			String oldAccessToken = logicCallbacks.getAuthToken();
 			//Read answer
@@ -224,7 +221,7 @@ public class VolleyController {
 			}
 			//Get new authToken
 			String accessToken = logicCallbacks.getAuthToken();
-			Timber.d(DEBUG_TAG+"."+method+".onStringResponse | Continuando llamadas almacenadas. Numero: " + temporaryCallQueue.size());
+			Timber.d(DEBUG_TAG+"."+method+".onResponse | Continuando las " + temporaryCallQueue.size() + " llamadas almacenadas.");
 
 			for(int i = 0; i<temporaryCallQueue.size(); i++){
 				doCallReplaceTokens(temporaryCallQueue.get(i), oldAccessToken, accessToken, method.toString());
@@ -255,7 +252,7 @@ public class VolleyController {
 
 	private void onResponseError(VolleyError volleyError, ArrayList<IOCallbacks> ioCallbacks, String code, String metodo){
 		if(volleyError.networkResponse!=null){
-			Timber.d(DEBUG_TAG+"."+metodo+".onResponseError | code: "+code + "| StatusCode: "+volleyError.networkResponse.statusCode);
+			Timber.d(DEBUG_TAG+"."+metodo+".onResponseError | code: " + code + "| StatusCode: " + volleyError.networkResponse.statusCode);
 			try {
 				Timber.d(DEBUG_TAG + "."+metodo+".onResponseError | Message: " + new String(volleyError.networkResponse.data, "UTF-8"));
 				if(volleyError.networkResponse.statusCode==401){
@@ -290,12 +287,11 @@ public class VolleyController {
 	}
 
 	private void retry(String code, ArrayList<IOCallbacks> ioCallbacks) {
-		Timber.d(DEBUG_TAG + ".retry | En retry, desde una llamada con codigo: " + code + ".");
-		Timber.d(DEBUG_TAG + ".retry | Estamos ya refrescando el token? " + (updatingToken ? "Si." : "No."));
+		Timber.d(DEBUG_TAG + ".retry | En retry, desde una llamada con codigo: " + code + ". Estamos ya refrescando el token? " + (updatingToken ? "Si." : "No."));
 
 		if(!updatingToken) {
 			updatingToken=true;
-			Timber.d(DEBUG_TAG + ".retry | Paramos la request queue principal");
+			Timber.d(DEBUG_TAG + ".retry | Paramos la request queue principal y procedemos a refrescar el token");
 			getRequestQueue().stop();
 			cancelAllPrimaryQueue();
 			VolleyController.getInstance().onCall(logicCallbacks.doRefreshToken(ioCallbacks).setCode(JSON_POST_UPDATE_ACCESS_TOKEN), false);

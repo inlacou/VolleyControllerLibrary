@@ -151,10 +151,10 @@ public class VolleyController {
 		}
 		iCall.prebuild();
 		
-		Timber.d(DEBUG_TAG + ".onCall."+iCall.getMethod()+" url: " + iCall.getUrl() + " | code: " + iCall.getCode() + " | requestQueue " + (primaryRequestQueue ? "primary" : "secondary"));
-		logMap(iCall.getHeaders(), "header", iCall.getMethod().toString());
-		logMap(iCall.getParams(), "params", iCall.getMethod().toString());
-		Timber.d(DEBUG_TAG+".onCall."+iCall.getMethod()+" Rawbody: "+iCall.getRawBody());
+		Timber.d(DEBUG_TAG + ".onCall."+iCall.getMethod()+"." + iCall.getCode() + " url: " + iCall.getUrl() + " | requestQueue " + (primaryRequestQueue ? "primary" : "secondary"));
+		logMap(iCall.getHeaders(), "header", iCall.getMethod().toString(), iCall.getCode());
+		logMap(iCall.getParams(), "params", iCall.getMethod().toString(), iCall.getCode());
+		Timber.d(DEBUG_TAG+".onCall."+iCall.getMethod()+"." + iCall.getCode() +" Rawbody: "+iCall.getRawBody());
 		
 		mRequestQueue.add(iCall.build(context, new Response.Listener<CustomResponse>() {
 			@Override
@@ -169,19 +169,19 @@ public class VolleyController {
 		}));
 	}
 
-	private void logMap(Map<String, String> map, String type, String method) {
+	private void logMap(Map<String, String> map, String type, String method, String code) {
 		if(map!=null) {
-			if(map.isEmpty()) Timber.d(DEBUG_TAG+".onCall."+method+" Map(" + type + ") = " + map);
+			if(map.isEmpty()) Timber.d(DEBUG_TAG+".onCall."+method+"."+code + " Map(" + type + ") = " + map);
 			for (String s : map.keySet()) {
-				Timber.d(DEBUG_TAG + ".onCall." + method + " " + type + " parameter " + s + ": " + map.get(s));
+				Timber.d(DEBUG_TAG + ".onCall."+method+"."+code +" " + type + " parameter " + s + ": " + map.get(s));
 			}
 		}else{
-			Timber.d(DEBUG_TAG+".onCall."+method+" Map(" + type + ") = " + null);
+			Timber.d(DEBUG_TAG+".onCall."+method+"."+code +" Map(" + type + ") = " + null);
 		}
 	}
 
 	private void onResponseFinal(CustomResponse response, ArrayList<IOCallbacks> ioCallbacks, String code, InternetCall.Method method, boolean allowLocationRedirect){
-		Timber.d(DEBUG_TAG+"."+method+".onResponseFinal | Method: " + method + " | Code: " + code + "| CustomResponse: " + response);
+		Timber.d(DEBUG_TAG+"."+method+".onResponseFinal." + code + " | Method: " + method + "| CustomResponse: " + response);
 		if(allowLocationRedirect && response.getHeaders().containsKey("Location") &&
 				response.getHeaders().get("Location")!=null &&
 				!response.getHeaders().get("Location").isEmpty()){
@@ -206,9 +206,9 @@ public class VolleyController {
 	}
 
 	private void onResponse(CustomResponse response, ArrayList<IOCallbacks> ioCallbacks, String code, InternetCall.Method method, boolean allowLocationRedirect){
-		Timber.d(DEBUG_TAG+"."+method+".onResponse | Code: " + code + " | CustomResponse: " + response);
+		Timber.d(DEBUG_TAG+"."+method+".onResponse." + code + " | CustomResponse: " + response);
 		if(code!=null && code.trim().equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN.trim())){
-			Timber.d(DEBUG_TAG+"."+method+".onResponse | Recibida la respuesta al codigo " + JSON_POST_UPDATE_ACCESS_TOKEN + ", updating tokens.");
+			Timber.d(DEBUG_TAG+"."+method+".onResponse." + code + " | Recibida la respuesta al codigo " + JSON_POST_UPDATE_ACCESS_TOKEN + ", updating tokens.");
 			//Save old authToken
 			String oldAccessToken = logicCallbacks.getAuthToken();
 			//Read answer
@@ -252,11 +252,11 @@ public class VolleyController {
 
 	private void onResponseError(VolleyError volleyError, ArrayList<IOCallbacks> ioCallbacks, String code, String metodo){
 		if(volleyError.networkResponse!=null){
-			Timber.d(DEBUG_TAG+"."+metodo+".onResponseError | code: " + code + "| StatusCode: " + volleyError.networkResponse.statusCode);
+			Timber.w(DEBUG_TAG+"."+metodo+".onResponseError." + code + "| StatusCode: " + volleyError.networkResponse.statusCode);
 			try {
-				Timber.d(DEBUG_TAG + "."+metodo+".onResponseError | Message: " + new String(volleyError.networkResponse.data, "UTF-8"));
+				Timber.w(DEBUG_TAG + "."+metodo+".onResponseError." + code + " | Message: " + new String(volleyError.networkResponse.data, "UTF-8"));
 				if(volleyError.networkResponse.statusCode==401){
-					Timber.d(DEBUG_TAG + "."+metodo+".onResponseError | Detectado un error 401, UNAUTHORIZED.");
+					Timber.w(DEBUG_TAG + "."+metodo+".onResponseError." + code + " | Detectado un error 401, UNAUTHORIZED.");
 					JSONObject jsonObject = new JSONObject(getMessage(volleyError));
 					if(logicCallbacks.getRefreshTokenInvalidMessage()!=null && !logicCallbacks.getRefreshTokenInvalidMessage().isEmpty() && jsonObject.toString().contains(logicCallbacks.getRefreshTokenInvalidMessage())){
 						logicCallbacks.onRefreshTokenInvalid(volleyError, code);
@@ -277,7 +277,7 @@ public class VolleyController {
 				e.printStackTrace();
 			}
 		}else{
-			Timber.d(DEBUG_TAG+"."+metodo+".onResponseError networkResponse==null");
+			Timber.w(DEBUG_TAG+"."+metodo+".onResponseError." + code + " networkResponse==null");
 		}
 		if(ioCallbacks !=null) {
 			for (int i=0; i<ioCallbacks.size(); i++){

@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity
 		int id = item.getItemId();
 
 		if (id == R.id.nav_GET) {
-			VolleyController.getInstance().onCall(new InternetCall()
+			VolleyController.INSTANCE.onCall(new InternetCall()
 					.setUrl("http://playground.byvapps.com/api/search?offset=0&limit=100")
 					.setMethod(InternetCall.Method.GET)
 					.setCode("code")
@@ -113,11 +113,11 @@ public class MainActivity extends AppCompatActivity
 						@Override
 						public void onResponseError(VolleyError error, String code) {
 							Log.d(DEBUG_TAG, "Code: " + code + " | VolleyError: " + error);
-							textView.setText(VolleyController.getInstance().getMessage(error));
+							textView.setText(VolleyController.INSTANCE.getMessage(error));
 						}
 					}));
 		} else if (id == R.id.nav_POST) {
-			VolleyController.getInstance().onCall(new InternetCall()
+			VolleyController.INSTANCE.onCall(new InternetCall()
 					.setUrl("http://jsonplaceholder.typicode.com/posts")
 					.setMethod(InternetCall.Method.POST)
 					.putParam("title", "foo")
@@ -136,7 +136,7 @@ public class MainActivity extends AppCompatActivity
 						@Override
 						public void onResponseError(VolleyError error, String code) {
 							Log.d(DEBUG_TAG, "Code: " + code + " | VolleyError: " + error);
-							textView.setText(VolleyController.getInstance().getMessage(error));
+							textView.setText(VolleyController.INSTANCE.getMessage(error));
 						}
 					}));
 		} else if (id == R.id.nav_PUT) {
@@ -147,7 +147,7 @@ public class MainActivity extends AppCompatActivity
 			params.put("notNull", "something");
 			params.put("body", "bar");
 			params.put("userId", "1");
-			VolleyController.getInstance().onCall(new InternetCall()
+			VolleyController.INSTANCE.onCall(new InternetCall()
 					.setUrl("http://jsonplaceholder.typicode.com/posts/1")
 					.setMethod(InternetCall.Method.PUT)
 					.putParams(params)
@@ -162,12 +162,12 @@ public class MainActivity extends AppCompatActivity
 						@Override
 						public void onResponseError(VolleyError error, String code) {
 							Log.d(DEBUG_TAG, "Code: " + code + " | VolleyError: " + error);
-							textView.setText(VolleyController.getInstance().getMessage(error));
+							textView.setText(VolleyController.INSTANCE.getMessage(error));
 						}
 					})
 			);
 		} else if (id == R.id.nav_DELETE) {
-			VolleyController.getInstance().onCall(new InternetCall()
+			VolleyController.INSTANCE.onCall(new InternetCall()
 					.setUrl("http://jsonplaceholder.typicode.com/posts/1")
 					.setMethod(InternetCall.Method.DELETE)
 					.setCode("code_delete_post")
@@ -181,11 +181,11 @@ public class MainActivity extends AppCompatActivity
 						@Override
 						public void onResponseError(VolleyError error, String code) {
 							Log.d(DEBUG_TAG, "Code: " + code + " | VolleyError: " + error);
-							textView.setText(VolleyController.getInstance().getMessage(error));
+							textView.setText(VolleyController.INSTANCE.getMessage(error));
 						}
 					}));
 		} else if (id == R.id.nav_no_response) {
-			VolleyController.getInstance().onCall(new InternetCall()
+			VolleyController.INSTANCE.onCall(new InternetCall()
 					.setUrl("http://neosalut-quiz-api.pre.tak.es/answer-load/9")
 					.setMethod(InternetCall.Method.GET)
 					.setCode("code_get_no_response")
@@ -199,11 +199,11 @@ public class MainActivity extends AppCompatActivity
 						@Override
 						public void onResponseError(VolleyError error, String code) {
 							Log.d(DEBUG_TAG, "Code: " + code + " | VolleyError: " + error);
-							textView.setText(VolleyController.getInstance().getMessage(error));
+							textView.setText(VolleyController.INSTANCE.getMessage(error));
 						}
 					}));
 		} else if (id == R.id.nav_GET_ssl) {
-			VolleyController.getInstance().onCall(new InternetCall()
+			VolleyController.INSTANCE.onCall(new InternetCall()
 					.setUrl("https://178.62.73.124:3000/api/profile")
 					.setMethod(InternetCall.Method.GET)
 					.setCode("code_get_no_response")
@@ -219,11 +219,11 @@ public class MainActivity extends AppCompatActivity
 						@Override
 						public void onResponseError(VolleyError error, String code) {
 							Log.d(DEBUG_TAG, "Code: " + code + " | VolleyError: " + error);
-							textView.setText(VolleyController.getInstance().getMessage(error));
+							textView.setText(VolleyController.INSTANCE.getMessage(error));
 						}
 					}));
 		} else if (id == R.id.nav_GET_activity_destroyed) {
-			VolleyController.getInstance().onCall(new InternetCall()
+			VolleyController.INSTANCE.onCall(new InternetCall()
 					.setUrl("http://playground.byvapps.com/api/search?offset=0&limit=1000000")
 					.setMethod(InternetCall.Method.GET)
 					.setCancelTag(this)
@@ -239,14 +239,14 @@ public class MainActivity extends AppCompatActivity
 						@Override
 						public void onResponseError(VolleyError error, String code) {
 							Log.d(DEBUG_TAG, "Code: " + code + " | VolleyError: " + error);
-							textView.setText(VolleyController.getInstance().getMessage(error));
+							textView.setText(VolleyController.INSTANCE.getMessage(error));
 						}
 					}));
 			textView = null;
-			VolleyController.getInstance().cancelRequest(this);
+			VolleyController.INSTANCE.cancelRequest(this);
 			Toast.makeText(this, "Should not give any response. If it gives, it's an app broking one", Toast.LENGTH_SHORT).show();
 		} else if (id == R.id.nav_GET_mirror) {
-			VolleyController.getInstance().onCall(new InternetCall()
+			VolleyController.INSTANCE.onCall(new InternetCall()
 					.setUrl("http://178.62.73.124:3000/api/mirror?id=1&id=2&id=3&offset=0&limit=1000000")
 					.setMethod(InternetCall.Method.GET)
 					.setCancelTag(this)
@@ -262,7 +262,7 @@ public class MainActivity extends AppCompatActivity
 						@Override
 						public void onResponseError(VolleyError error, String code) {
 							Log.d(DEBUG_TAG, "Code: " + code + " | VolleyError: " + error);
-							textView.setText(VolleyController.getInstance().getMessage(error));
+							textView.setText(VolleyController.INSTANCE.getMessage(error));
 						}
 					}));
 		}

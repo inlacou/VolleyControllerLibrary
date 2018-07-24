@@ -31,8 +31,7 @@ class InternetCall {
 	private var interceptors: MutableList<Interceptor> = mutableListOf()
 	var file: File? = null
 		private set
-	var callbacks: MutableList<VolleyController.IOCallbacks>? = null
-		private set
+	var callbacks: MutableList<VolleyController.IOCallbacks> = mutableListOf()
 	private var fileKey: String? = null
 	private var cancelTag: Any? = null
 	private var allowLocationRedirect: Boolean = true
@@ -140,7 +139,7 @@ class InternetCall {
 		return this
 	}
 
-	fun build(context: Context, listener: com.android.volley.Response.Listener<CustomResponse>, errorListener: com.android.volley.Response.ErrorListener): Request<*> {
+	fun build(listener: com.android.volley.Response.Listener<CustomResponse>, errorListener: com.android.volley.Response.ErrorListener): Request<*> {
 		if (file == null) {
 			val request = object : CustomRequest(this.getMethod().value(), getUrl(), errorListener) {
 				override fun deliverResponse(response: Any) {
@@ -207,7 +206,7 @@ class InternetCall {
 					// file name could found file base or direct access from real path
 					// for now just get bitmap data from ImageView
 					try {
-						fileKey?.let { params[it] = DataPart(file?.name + "." + file?.format, ImageUtils.getFileDataFromBitmap(context, ImageUtils.getBitmapFromPath(file?.location)), file?.type.toString() + "/" + file?.format) }
+						fileKey?.let { params[it] = DataPart(file?.name + "." + file?.format, ImageUtils.getFileDataFromBitmap(ImageUtils.getBitmapFromPath(file?.location)), file?.type.toString() + "/" + file?.format) }
 					} catch (e: IOException) {
 						e.printStackTrace()
 					}
@@ -226,22 +225,22 @@ class InternetCall {
 		return this
 	}
 
-	fun setInterceptors(interceptors: ArrayList<Interceptor>): InternetCall {
-		this.interceptors = interceptors
+	fun addInterceptors(interceptors: List<Interceptor>): InternetCall {
+		this.interceptors.addAll(interceptors)
 		return this
 	}
 
-	fun addInterceptors(interceptors: ArrayList<Interceptor>?): InternetCall {
-		if (interceptors == null) {
-			return this
-		}
-		this.interceptors = object : ArrayList<Interceptor>() {
-			init {
-				addAll(interceptors)
-				addAll(this@InternetCall.interceptors)
-			}
-		}
+	fun putInterceptors(interceptors: List<Interceptor>): InternetCall {
+		this.interceptors.clear()
+		this.interceptors.addAll(interceptors)
 		return this
+	}
+
+	/**
+	 * Alias for putInterceptors
+	 */
+	fun setInterceptors(interceptors: List<Interceptor>): InternetCall {
+		return putInterceptors(interceptors)
 	}
 
 	fun addInterceptor(interceptor: Interceptor?): InternetCall {

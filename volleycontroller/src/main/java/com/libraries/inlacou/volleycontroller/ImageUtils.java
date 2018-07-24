@@ -18,7 +18,7 @@ public class ImageUtils {
 	 * @param bitmap data
 	 * @return byte array
 	 */
-	public static byte[] getFileDataFromBitmap(Context context, Bitmap bitmap) {
+	public static byte[] getFileDataFromBitmap(Bitmap bitmap) {
 		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 		bitmap.compress(Bitmap.CompressFormat.JPEG, 80, byteArrayOutputStream);
 		return byteArrayOutputStream.toByteArray();

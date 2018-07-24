@@ -12,7 +12,7 @@ import java.io.IOException
 class InternetCall {
 	var method: Method = Method.GET
 		private set
-	var code: String? = null
+	var code: String = ""
 		private set
 	var url: String? = null
 		private set
@@ -28,7 +28,9 @@ class InternetCall {
 		private set
 	var file: File? = null
 		private set
-	var callbacks: MutableList<VolleyController.IOCallbacks> = mutableListOf()
+	var successCallbacks: MutableList<((item: Any, code: String) -> Unit)> = mutableListOf()
+		private set
+	var errorCallbacks: MutableList<((item: Any, code: String) -> Unit)> = mutableListOf()
 		private set
 	var fileKey: String? = null
 		private set
@@ -68,8 +70,13 @@ class InternetCall {
 		return this
 	}
 
-	fun addCallback(callback: VolleyController.IOCallbacks): InternetCall {
-		this.callbacks.add(callback)
+	fun addSuccessCallback(callback: ((item: Any, code: String) -> Unit)): InternetCall {
+		this.successCallbacks.add(callback)
+		return this
+	}
+
+	fun addErrorCallback(callback: ((item: Any, code: String) -> Unit)): InternetCall {
+		this.errorCallbacks.add(callback)
 		return this
 	}
 

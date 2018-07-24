@@ -22,8 +22,8 @@ object VolleyController {
 	private val temporaryCallQueue = mutableListOf<InternetCall>()
 	private var updatingToken = false
 
-	lateinit var requestQueue: RequestQueue
-	lateinit var secondaryRequestQueue: RequestQueue
+	private lateinit var requestQueue: RequestQueue
+	private lateinit var secondaryRequestQueue: RequestQueue
 	internal lateinit var logicCallbacks: LogicCallbacks
 	private lateinit var errorMessage: String
 	private var interceptors = mutableListOf<InternetCall.Interceptor>()
@@ -86,7 +86,7 @@ object VolleyController {
 	private fun removeFromTemporaryList(code: String?) {
 		val i = temporaryCallQueue.size
 		for (c in 0 until i) {
-			if (temporaryCallQueue[c].code!!.equals(code!!, ignoreCase = true)) {
+			if (temporaryCallQueue[c].code.equals(code!!, ignoreCase = true)) {
 				temporaryCallQueue.removeAt(c)
 				return
 			}
@@ -100,13 +100,12 @@ object VolleyController {
 	private fun onCall(iCall: InternetCall, primaryRequestQueue: Boolean) {
 		iCall.addInterceptors(interceptors)
 
-		val mRequestQueue: RequestQueue?
-		if (primaryRequestQueue) {
-			mRequestQueue = requestQueue
+		val mRequestQueue: RequestQueue = if (primaryRequestQueue) {
+			requestQueue
 		} else {
-			mRequestQueue = secondaryRequestQueue
+			secondaryRequestQueue
 		}
-		if (iCall.code != null && !iCall.code!!.equals(JSON_POST_UPDATE_ACCESS_TOKEN, ignoreCase = true)) {
+		if (!iCall.code.equals(JSON_POST_UPDATE_ACCESS_TOKEN, ignoreCase = true)) {
 			temporaryCallQueue.add(iCall)
 		}
 		iCall.prebuild()
@@ -116,7 +115,9 @@ object VolleyController {
 		logMap(iCall.params, "params", iCall.method.toString(), iCall.code)
 		Timber.d(DEBUG_TAG + ".onCall." + iCall.method + "." + iCall.code + " Rawbody: " + iCall.rawBody)
 
-		mRequestQueue.add(iCall.build(Response.Listener { s -> this@VolleyController.onResponse(s, iCall.callbacks, iCall.code, iCall.method, iCall.allowLocationRedirect) }, Response.ErrorListener { volleyError -> this@VolleyController.onResponseError(volleyError, iCall.callbacks, iCall.code, iCall.method.toString()) }))
+		mRequestQueue.add(iCall.build(
+				Response.Listener { s -> this@VolleyController.onResponse(s, iCall.successCallbacks, iCall.errorCallbacks, iCall.code, iCall.method, iCall.allowLocationRedirect) },
+				Response.ErrorListener { volleyError -> this@VolleyController.onResponseError(volleyError, iCall.successCallbacks, iCall.errorCallbacks, iCall.code, iCall.method.toString()) }))
 	}
 
 	private fun logMap(map: Map<String, String>?, type: String, method: String, code: String?) {
@@ -130,27 +131,28 @@ object VolleyController {
 		}
 	}
 
-	private fun onResponseFinal(response: CustomResponse, ioCallbacks: List<IOCallbacks>, code: String?, method: InternetCall.Method, allowLocationRedirect: Boolean) {
+	private fun onResponseFinal(response: CustomResponse, successCb: List<((item: Any, code: String) -> Unit)>, errorCb: List<((item: Any, code: String) -> Unit)>, code: String, method: InternetCall.Method, allowLocationRedirect: Boolean) {
 		Timber.d("$DEBUG_TAG.$method.onResponseFinal.$code | Method: $method| CustomResponse: $response")
 		response.headers["Location"].let { locationHeader ->
 			if (allowLocationRedirect && locationHeader!=null && !locationHeader.isEmpty()) {
 				val call = InternetCall()
 				call.setUrl(locationHeader)
 				call.setMethod(InternetCall.Method.GET)
-				call.setCode(code!!)
-				ioCallbacks.forEach { call.addCallback(it) }
+				call.setCode(code)
+				successCb.forEach { call.addSuccessCallback(it) }
+				errorCb.forEach { call.addErrorCallback(it) }
 				onCall(call)
 			} else {
-				ioCallbacks.forEach { it.onResponse(response, code) }
+				successCb.forEach { it.invoke(response, code) }
 				removeFromTemporaryList(code)
 			}
 		}
 
 	}
 
-	private fun onResponse(response: CustomResponse, ioCallbacks: List<IOCallbacks>?, code: String?, method: InternetCall.Method, allowLocationRedirect: Boolean) {
+	private fun onResponse(response: CustomResponse, successCb: List<((item: Any, code: String) -> Unit)>, errorCb: List<((item: Any, code: String) -> Unit)>, code: String, method: InternetCall.Method, allowLocationRedirect: Boolean) {
 		Timber.d("$DEBUG_TAG.$method.onResponse.$code | CustomResponse: $response")
-		if (code != null && code.trim { it <= ' ' }.equals(JSON_POST_UPDATE_ACCESS_TOKEN.trim { it <= ' ' }, ignoreCase = true)) {
+		if (code.trim { it <= ' ' }.equals(JSON_POST_UPDATE_ACCESS_TOKEN.trim { it <= ' ' }, ignoreCase = true)) {
 			Timber.d("$DEBUG_TAG.$method.onResponse.$code | Recibida la respuesta al codigo $JSON_POST_UPDATE_ACCESS_TOKEN, updating tokens.")
 			//Save old authToken
 			val oldAccessToken = logicCallbacks.authToken
@@ -173,18 +175,18 @@ object VolleyController {
 			updatingToken = false
 			requestQueue.start()
 		} else {
-			if (ioCallbacks != null) {
-				onResponseFinal(response, ioCallbacks, code, method, allowLocationRedirect)
-			}
+			onResponseFinal(response, successCb, errorCb, code, method, allowLocationRedirect)
 		}
 	}
 
 	private fun doCallReplaceTokens(iCall: InternetCall, oldAccessToken: String, accessToken: String, metodo: String) {
 		requestQueue.add(iCall.replaceAccessToken(oldAccessToken, accessToken)
-				.prebuild().build(Response.Listener { s -> this@VolleyController.onResponseFinal(s, iCall.callbacks, iCall.code, iCall.method, iCall.allowLocationRedirect) }, Response.ErrorListener { volleyError -> this@VolleyController.onResponseError(volleyError, iCall.callbacks, iCall.code, metodo) }))
+				.prebuild().build(
+						Response.Listener { s -> this@VolleyController.onResponseFinal(s, iCall.successCallbacks, iCall.errorCallbacks, iCall.code, iCall.method, iCall.allowLocationRedirect) },
+						Response.ErrorListener { volleyError -> this@VolleyController.onResponseError(volleyError, iCall.successCallbacks, iCall.errorCallbacks, iCall.code, metodo) }))
 	}
 
-	private fun onResponseError(volleyError: VolleyError, ioCallbacks: List<IOCallbacks>?, code: String?, metodo: String) {
+	private fun onResponseError(volleyError: VolleyError, successCb: List<((item: Any, code: String) -> Unit)>, errorCb: List<((item: Any, code: String) -> Unit)>, code: String, metodo: String) {
 		if (volleyError.networkResponse != null) {
 			Timber.w(DEBUG_TAG + "." + metodo + ".onResponseError." + code + "| StatusCode: " + volleyError.networkResponse.statusCode)
 			try {
@@ -207,7 +209,7 @@ object VolleyController {
 												&& authTokenExpiredMessage.isNotEmpty()
 												&& jsonObject.toString().contains(authTokenExpiredMessage
 										))) {
-									retry(code, ioCallbacks)
+									retry(code, successCb, errorCb)
 									return
 								}
 							}
@@ -222,14 +224,10 @@ object VolleyController {
 		} else {
 			Timber.w("$DEBUG_TAG.$metodo.onResponseError.$code networkResponse==null")
 		}
-		if (ioCallbacks != null) {
-			for (i in ioCallbacks.indices) {
-				ioCallbacks[i].onResponseError(volleyError, code)
-			}
-		}
+		errorCb.forEach { it.invoke(volleyError, code) }
 	}
 
-	private fun retry(code: String?, ioCallbacks: List<IOCallbacks>?) {
+	private fun retry(code: String?, successCb: List<((item: Any, code: String) -> Unit)>, errorCb: List<((item: Any, code: String) -> Unit)>) {
 		Timber.d(DEBUG_TAG + ".retry | En retry, desde una llamada con codigo: " + code + ". Estamos ya refrescando el token? " + if (updatingToken) "Si." else "No.")
 
 		if (!updatingToken) {
@@ -237,7 +235,7 @@ object VolleyController {
 			Timber.d("$DEBUG_TAG.retry | Paramos la request queue principal y procedemos a refrescar el token")
 			requestQueue.stop()
 			cancelAllPrimaryQueue()
-			onCall(logicCallbacks.doRefreshToken(ioCallbacks).setCode(JSON_POST_UPDATE_ACCESS_TOKEN), false)
+			onCall(logicCallbacks.doRefreshToken(successCb, errorCb).setCode(JSON_POST_UPDATE_ACCESS_TOKEN), false)
 		}
 	}
 
@@ -305,12 +303,12 @@ object VolleyController {
 		secondaryRequestQueue.cancelAll(filter)
 	}
 
-	fun cancelAllPrimaryQueue() {
+	private fun cancelAllPrimaryQueue() {
 		val filter = RequestQueue.RequestFilter { true }
 		requestQueue.cancelAll(filter)
 	}
 
-	fun cancelAllSecondaryQueue() {
+	private fun cancelAllSecondaryQueue() {
 		val filter = RequestQueue.RequestFilter { true }
 		secondaryRequestQueue.cancelAll(filter)
 	}
@@ -318,22 +316,6 @@ object VolleyController {
 	fun cancelAll() {
 		cancelAllPrimaryQueue()
 		cancelAllSecondaryQueue()
-	}
-
-	interface IOCallbacks {
-		/**
-		 *
-		 * @param response
-		 * @param code
-		 */
-		fun onResponse(response: CustomResponse, code: String?)
-
-		/**
-		 *
-		 * @param error
-		 * @param code
-		 */
-		fun onResponseError(error: VolleyError, code: String?)
 	}
 
 	interface LogicCallbacks {
@@ -352,7 +334,7 @@ object VolleyController {
 
 		fun setTokens(jsonObject: JSONObject)
 
-		fun doRefreshToken(ioCallbacks: List<IOCallbacks>?): InternetCall
+		fun doRefreshToken(successCb: List<((item: Any, code: String) -> Unit)>, errorCb: List<((item: Any, code: String) -> Unit)>): InternetCall
 
 		fun onRefreshTokenInvalid(volleyError: VolleyError, code: String?)
 

@@ -24,7 +24,7 @@ object VolleyController {
 
 	lateinit var requestQueue: RequestQueue
 	lateinit var secondaryRequestQueue: RequestQueue
-	private lateinit var logicCallbacks: LogicCallbacks
+	internal lateinit var logicCallbacks: LogicCallbacks
 	private lateinit var errorMessage: String
 	private var interceptors = mutableListOf<InternetCall.Interceptor>()
 
@@ -86,7 +86,7 @@ object VolleyController {
 	private fun removeFromTemporaryList(code: String?) {
 		val i = temporaryCallQueue.size
 		for (c in 0 until i) {
-			if (temporaryCallQueue[c].getCode()!!.equals(code!!, ignoreCase = true)) {
+			if (temporaryCallQueue[c].code!!.equals(code!!, ignoreCase = true)) {
 				temporaryCallQueue.removeAt(c)
 				return
 			}
@@ -106,17 +106,17 @@ object VolleyController {
 		} else {
 			mRequestQueue = secondaryRequestQueue
 		}
-		if (iCall.getCode() != null && !iCall.getCode()!!.equals(JSON_POST_UPDATE_ACCESS_TOKEN, ignoreCase = true)) {
+		if (iCall.code != null && !iCall.code!!.equals(JSON_POST_UPDATE_ACCESS_TOKEN, ignoreCase = true)) {
 			temporaryCallQueue.add(iCall)
 		}
 		iCall.prebuild()
 
-		Timber.d(DEBUG_TAG + ".onCall." + iCall.getMethod() + "." + iCall.getCode() + " url: " + iCall.getUrl() + " | requestQueue " + if (primaryRequestQueue) "primary" else "secondary")
-		logMap(iCall.getHeaders(), "header", iCall.getMethod().toString(), iCall.getCode())
-		logMap(iCall.getParams(), "params", iCall.getMethod().toString(), iCall.getCode())
-		Timber.d(DEBUG_TAG + ".onCall." + iCall.getMethod() + "." + iCall.getCode() + " Rawbody: " + iCall.getRawBody())
+		Timber.d(DEBUG_TAG + ".onCall." + iCall.method + "." + iCall.code + " url: " + iCall.url + " | requestQueue " + if (primaryRequestQueue) "primary" else "secondary")
+		logMap(iCall.headers, "header", iCall.method.toString(), iCall.code)
+		logMap(iCall.params, "params", iCall.method.toString(), iCall.code)
+		Timber.d(DEBUG_TAG + ".onCall." + iCall.method + "." + iCall.code + " Rawbody: " + iCall.rawBody)
 
-		mRequestQueue.add(iCall.build(Response.Listener { s -> this@VolleyController.onResponse(s, iCall.callbacks, iCall.getCode(), iCall.getMethod(), iCall.isAllowLocationRedirect()) }, Response.ErrorListener { volleyError -> this@VolleyController.onResponseError(volleyError, iCall.callbacks, iCall.getCode(), iCall.getMethod().toString()) }))
+		mRequestQueue.add(iCall.build(Response.Listener { s -> this@VolleyController.onResponse(s, iCall.callbacks, iCall.code, iCall.method, iCall.allowLocationRedirect) }, Response.ErrorListener { volleyError -> this@VolleyController.onResponseError(volleyError, iCall.callbacks, iCall.code, iCall.method.toString()) }))
 	}
 
 	private fun logMap(map: Map<String, String>?, type: String, method: String, code: String?) {
@@ -181,7 +181,7 @@ object VolleyController {
 
 	private fun doCallReplaceTokens(iCall: InternetCall, oldAccessToken: String, accessToken: String, metodo: String) {
 		requestQueue.add(iCall.replaceAccessToken(oldAccessToken, accessToken)
-				.prebuild().build(Response.Listener { s -> this@VolleyController.onResponseFinal(s, iCall.callbacks, iCall.getCode(), iCall.getMethod(), iCall.isAllowLocationRedirect()) }, Response.ErrorListener { volleyError -> this@VolleyController.onResponseError(volleyError, iCall.callbacks, iCall.getCode(), metodo) }))
+				.prebuild().build(Response.Listener { s -> this@VolleyController.onResponseFinal(s, iCall.callbacks, iCall.code, iCall.method, iCall.allowLocationRedirect) }, Response.ErrorListener { volleyError -> this@VolleyController.onResponseError(volleyError, iCall.callbacks, iCall.code, metodo) }))
 	}
 
 	private fun onResponseError(volleyError: VolleyError, ioCallbacks: List<IOCallbacks>?, code: String?, metodo: String) {
@@ -274,7 +274,7 @@ object VolleyController {
 			}
 		}) {
 			@Override
-			protected Map<String, String> getParams() {
+			protected Map<String, String> params {
 				return params;
 			}
 

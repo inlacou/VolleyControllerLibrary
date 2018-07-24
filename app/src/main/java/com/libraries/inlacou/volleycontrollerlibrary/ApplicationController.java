@@ -16,6 +16,8 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import timber.log.Timber;
+
 /**
  * Created by inlacou on 14/11/16.
  */
@@ -34,6 +36,9 @@ public class ApplicationController extends Application {
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		
+		Timber.plant(new Timber.DebugTree());
+		
 		VolleyController.INSTANCE.init(this, true, new VolleyController.LogicCallbacks() {
 			
 			@Override
@@ -60,7 +65,7 @@ public class ApplicationController extends Application {
 			@NotNull
 			@Override
 			public String getCharset() {
-				return null;
+				return VolleyController.CharSetNames.UTF_8.toString();
 			}
 			
 			@Nullable
@@ -84,13 +89,13 @@ public class ApplicationController extends Application {
 			@NotNull
 			@Override
 			public String getAuthToken() {
-				return null;
+				return "authtoken";
 			}
 			
 			@NotNull
 			@Override
 			public String getRefreshToken() {
-				return null;
+				return "refreshtoken";
 			}
 		});
 		VolleyController.INSTANCE.addInterceptor(new InternetCall.Interceptor() {

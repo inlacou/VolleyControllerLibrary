@@ -1,47 +1,44 @@
 package com.libraries.inlacou.volleycontroller
 
-import android.content.Context
 import android.util.Log
-
-import com.android.volley.AuthFailureError
-import com.android.volley.DefaultRetryPolicy
-import com.android.volley.NetworkResponse
-import com.android.volley.Request
-import com.android.volley.Response
+import com.android.volley.*
 import com.libraries.inlacou.volleycontroller.multipart.DataPart
 import com.libraries.inlacou.volleycontroller.multipart.VolleyMultipartRequest
-
 import java.io.IOException
-import java.util.ArrayList
-import java.util.HashMap
-
-import timber.log.Timber
 
 /**
  * Created by inlacou on 10/09/14.
  */
 class InternetCall {
-	private var method: Method = Method.GET
-	private var code: String? = null
-	private var url: String? = null
-	private var params: MutableMap<String, String> = mutableMapOf()
-	private var headers: MutableMap<String, String> = mutableMapOf()
-	private var rawBody: String = ""
-	private var retryPolicy: DefaultRetryPolicy? = null
-	private var interceptors: MutableList<Interceptor> = mutableListOf()
+	var method: Method = Method.GET
+		private set
+	var code: String? = null
+		private set
+	var url: String? = null
+		private set
+	var params: MutableMap<String, String> = mutableMapOf()
+		private set
+	var headers: MutableMap<String, String> = mutableMapOf()
+		private set
+	var rawBody: String = ""
+		private set
+	var retryPolicy: DefaultRetryPolicy? = null
+		private set
+	var interceptors: MutableList<Interceptor> = mutableListOf()
+		private set
 	var file: File? = null
 		private set
 	var callbacks: MutableList<VolleyController.IOCallbacks> = mutableListOf()
-	private var fileKey: String? = null
-	private var cancelTag: Any? = null
-	private var allowLocationRedirect: Boolean = true
+		private set
+	var fileKey: String? = null
+		private set
+	var cancelTag: Any? = null
+		private set
+	var allowLocationRedirect: Boolean = true
+		private set
 
 	init {
 		setRetryPolicy(DefaultRetryPolicy(10000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT))
-	}
-
-	fun getUrl(): String? {
-		return url
 	}
 
 	fun setUrl(url: String): InternetCall {
@@ -55,10 +52,6 @@ class InternetCall {
 		return this
 	}
 
-	fun getRawBody(): String? {
-		return rawBody
-	}
-
 	fun setRawBody(rawBody: String): InternetCall {
 		this.rawBody = rawBody
 		return this
@@ -69,30 +62,15 @@ class InternetCall {
 		return this
 	}
 
-	fun getHeaders(): Map<String, String> {
-		return headers
-	}
-
 	fun setParams(params: MutableMap<String, String>): InternetCall {
 		rawBody = ""
 		this.params = params
 		return this
 	}
 
-	fun getParams(): Map<String, String> {
-		return params
-	}
-
 	fun addCallback(callback: VolleyController.IOCallbacks): InternetCall {
-		if (callbacks == null) {
-			callbacks = mutableListOf()
-		}
-		this.callbacks?.add(callback)
+		this.callbacks.add(callback)
 		return this
-	}
-
-	fun isAllowLocationRedirect(): Boolean {
-		return allowLocationRedirect
 	}
 
 	fun setAllowLocationRedirect(b: Boolean): InternetCall {
@@ -100,17 +78,9 @@ class InternetCall {
 		return this
 	}
 
-	fun getCode(): String? {
-		return code
-	}
-
 	fun setCode(code: String): InternetCall {
 		this.code = code
 		return this
-	}
-
-	fun getMethod(): Method {
-		return method
 	}
 
 	fun setMethod(method: Method): InternetCall {
@@ -121,8 +91,8 @@ class InternetCall {
 	fun replaceAccessToken(oldAccessToken: String, newAccessToken: String): InternetCall {
 		url?.let { setUrl(it.replace(oldAccessToken, newAccessToken)) }
 
-		headers.forEach { key, value -> if(value.contains(oldAccessToken)) headers[key] = value.replace(oldAccessToken, newAccessToken) }
-		params.forEach { key, value -> if(value.contains(oldAccessToken)) headers[key] = value.replace(oldAccessToken, newAccessToken) }
+		headers.forEach { if(it.value.contains(oldAccessToken)) headers[it.key] = it.value.replace(oldAccessToken, newAccessToken) }
+		params.forEach { if(it.value.contains(oldAccessToken)) headers[it.key] = it.value.replace(oldAccessToken, newAccessToken) }
 
 		if (!rawBody.isEmpty() && rawBody.contains(oldAccessToken)) {
 			rawBody = rawBody.replace(oldAccessToken, newAccessToken)
@@ -141,7 +111,7 @@ class InternetCall {
 
 	fun build(listener: com.android.volley.Response.Listener<CustomResponse>, errorListener: com.android.volley.Response.ErrorListener): Request<*> {
 		if (file == null) {
-			val request = object : CustomRequest(this.getMethod().value(), getUrl(), errorListener) {
+			val request = object : CustomRequest(this.method.value(), url, errorListener) {
 				override fun deliverResponse(response: Any) {
 					listener.onResponse(response as CustomResponse)
 				}
@@ -155,27 +125,20 @@ class InternetCall {
 
 				@Throws(AuthFailureError::class)
 				override fun getHeaders(): Map<String, String>? {
-					val headers = this@InternetCall.getHeaders()
-					headers.forEach { key, value -> Log.v(DEBUG_TAG + "." + this@InternetCall.getMethod(), "header -> $key: $value") }
-					for ((key, value) in headers) {
-						Timber.v(DEBUG_TAG + "." + this@InternetCall.getMethod() + " header -> $key: $value")
-					}
+					this@InternetCall.headers.forEach { Log.v(DEBUG_TAG + "." + this@InternetCall.method , " header -> ${it.key}: ${it.value}") }
 					return this@InternetCall.headers
 				}
 
 				override fun getParams(): Map<String, String>? {
-					val params = this@InternetCall.getParams()
-					for ((key, value) in params) {
-						Log.v(DEBUG_TAG + "." + this@InternetCall.getMethod(), "params -> $key: $value")
-					}
-					return params
+					this@InternetCall.params.forEach { Log.v(DEBUG_TAG + "." + this@InternetCall.method , " params -> ${it.key}: ${it.value}") }
+					return this@InternetCall.params
 				}
 
 				@Throws(AuthFailureError::class)
 				override fun getBody(): ByteArray {
-					val body = this@InternetCall.getRawBody()
-					if (body != null && !body.isEmpty()) {
-						Log.v(DEBUG_TAG + "." + this@InternetCall.getMethod(), "body -> $body")
+					val body = this@InternetCall.rawBody
+					if (!body.isEmpty()) {
+						Log.v(DEBUG_TAG + "." + this@InternetCall.method, "body -> $body")
 						return body.toByteArray()
 					}
 					return super.getBody()
@@ -185,7 +148,7 @@ class InternetCall {
 			if (cancelTag != null) request.tag = cancelTag
 			return request
 		} else {
-			val request = object : VolleyMultipartRequest(this.getMethod().value(), getUrl(), errorListener) {
+			val request = object : VolleyMultipartRequest(this.method.value(), url, errorListener) {
 				override fun deliverResponse(response: Any) {
 					listener.onResponse(response as CustomResponse)
 				}
@@ -278,10 +241,6 @@ class InternetCall {
 		rawBody = ""
 		this.params.putAll(params)
 		return this
-	}
-
-	fun getCancelTag(): Any? {
-		return cancelTag
 	}
 
 	fun setCancelTag(tag: Any): InternetCall {

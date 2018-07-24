@@ -144,11 +144,11 @@ class InternetCall {
 				@Throws(AuthFailureError::class)
 				override fun getBody(): ByteArray {
 					val body = this@InternetCall.rawBody
-					if (!body.isEmpty()) {
-						Log.v(DEBUG_TAG + "." + this@InternetCall.method, "body -> $body")
+					Log.v(DEBUG_TAG + "." + this@InternetCall.method, "body -> $body")
+					if (body.isNotEmpty()) {
 						return body.toByteArray()
 					}
-					return super.getBody()
+					return super.getBody() ?: "".toByteArray()
 				}
 			}
 			request.retryPolicy = retryPolicy

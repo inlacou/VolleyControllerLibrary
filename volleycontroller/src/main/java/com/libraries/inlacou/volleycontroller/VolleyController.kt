@@ -108,7 +108,6 @@ object VolleyController {
 		if (!iCall.code.equals(JSON_POST_UPDATE_ACCESS_TOKEN, ignoreCase = true)) {
 			temporaryCallQueue.add(iCall)
 		}
-		iCall.prebuild()
 
 		Timber.d(DEBUG_TAG + ".onCall." + iCall.method + "." + iCall.code + " url: " + iCall.url + " | requestQueue " + if (primaryRequestQueue) "primary" else "secondary")
 		logMap(iCall.headers, "header", iCall.method.toString(), iCall.code)

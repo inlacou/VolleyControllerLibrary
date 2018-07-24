@@ -148,6 +148,28 @@ public class MainActivity extends AppCompatActivity
 							return null;
 						}
 					}));
+		} else if (id == R.id.nav_POST_2) {
+			VolleyController.INSTANCE.onCall(new InternetCall()
+					.setUrl("http://jsonplaceholder.typicode.com/posts")
+					.setMethod(InternetCall.Method.POST)
+					.setRawBody("{ \"title\": \"foo\" }")
+					.setCode("code_create_posts")
+					.addSuccessCallback(new Function2<CustomResponse, String, Unit>() {
+						@Override
+						public Unit invoke(CustomResponse response, String code) {
+							Log.d(DEBUG_TAG, "Code: " + code + " | CustomResponse: " + response);
+							textView.setText(response.getData());
+							return null;
+						}
+					})
+					.addErrorCallback(new Function2<VolleyError, String, Unit>() {
+						@Override
+						public Unit invoke(VolleyError error, String code) {
+							Log.d(DEBUG_TAG, "Code: " + code + " | VolleyError: " + error);
+							textView.setText(VolleyController.INSTANCE.getMessage(error));
+							return null;
+						}
+					}));
 		} else if (id == R.id.nav_PUT) {
 			HashMap<String, String> params = new HashMap<>();
 			params.put("id", "1");

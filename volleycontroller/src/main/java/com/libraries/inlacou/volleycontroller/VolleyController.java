@@ -107,14 +107,22 @@ public class VolleyController {
 			return "method-null";
 		}
 		switch (method){
-			case Request.Method.PUT:
-				return "put";
 			case Request.Method.GET:
 				return "get";
-			case Request.Method.DELETE:
-				return "delete";
 			case Request.Method.POST:
 				return "post";
+			case Request.Method.PUT:
+				return "put";
+			case Request.Method.DELETE:
+				return "delete";
+			case Request.Method.PATCH:
+				return "patch";
+			case Request.Method.HEAD:
+				return "head";
+			case Request.Method.OPTIONS:
+				return "options";
+			case Request.Method.TRACE:
+				return "trace";
 			default:
 				return "method-unknown";
 		}

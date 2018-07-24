@@ -358,7 +358,7 @@ public class InternetCall {
 
 
 	public enum Method{
-		GET, POST, PUT, DELETE;
+		GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS, TRACE;
 
 		int value(){
 			switch (this){
@@ -371,6 +371,14 @@ public class InternetCall {
 					return Request.Method.PUT;
 				case DELETE:
 					return Request.Method.DELETE;
+				case PATCH:
+					return Request.Method.PATCH;
+				case HEAD:
+					return Request.Method.HEAD;
+				case OPTIONS:
+					return Request.Method.OPTIONS;
+				case TRACE:
+					return Request.Method.TRACE;
 			}
 		}
 
@@ -385,6 +393,14 @@ public class InternetCall {
 					return "PUT";
 				case DELETE:
 					return "DELETE";
+				case PATCH:
+					return "PATCH";
+				case HEAD:
+					return "HEAD";
+				case OPTIONS:
+					return "OPTIONS";
+				case TRACE:
+					return "TRACE";
 				default:
 					return "(default)GET";
 			}
@@ -393,9 +409,7 @@ public class InternetCall {
 
 	public interface Interceptor {
 		/**
-		 *
 		 * @param internetCall
-		 * @return modified internetCall
 		 */
 		void intercept(InternetCall internetCall);
 	}

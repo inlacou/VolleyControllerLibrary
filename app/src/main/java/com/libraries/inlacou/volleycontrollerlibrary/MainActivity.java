@@ -25,6 +25,9 @@ import com.libraries.inlacou.volleycontroller.VolleyController;
 import java.util.HashMap;
 import java.util.Map;
 
+import kotlin.Unit;
+import kotlin.jvm.functions.Function2;
+
 public class MainActivity extends AppCompatActivity
 		implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -35,10 +38,10 @@ public class MainActivity extends AppCompatActivity
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+		Toolbar toolbar = findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 
-		FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+		FloatingActionButton fab = findViewById(R.id.fab);
 		fab.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
@@ -47,20 +50,20 @@ public class MainActivity extends AppCompatActivity
 			}
 		});
 
-		DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+		DrawerLayout drawer = findViewById(R.id.drawer_layout);
 		ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
 		drawer.setDrawerListener(toggle);
 		toggle.syncState();
 
-		NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+		NavigationView navigationView = findViewById(R.id.nav_view);
 		navigationView.setNavigationItemSelectedListener(this);
 
-		textView = (TextView) findViewById(R.id.textView);
+		textView = findViewById(R.id.textView);
 	}
 
 	@Override
 	public void onBackPressed() {
-		DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+		DrawerLayout drawer = findViewById(R.id.drawer_layout);
 		if (drawer.isDrawerOpen(GravityCompat.START)) {
 			drawer.closeDrawer(GravityCompat.START);
 		} else {
@@ -101,19 +104,22 @@ public class MainActivity extends AppCompatActivity
 					.setUrl("http://playground.byvapps.com/api/search?offset=0&limit=100")
 					.setMethod(InternetCall.Method.GET)
 					.setCode("code")
-					.addCallback(new VolleyController.IOCallbacks() {
+					.addSuccessCallback(new Function2<CustomResponse, String, Unit>() {
 						@Override
-						public void onResponse(CustomResponse response, String code) {
+						public Unit invoke(CustomResponse response, String code) {
 							Log.d(DEBUG_TAG, "Code: " + code + " | CustomResponse: " + new Gson().toJson(response));
 							textView.setText(response.getData());
 							Log.d(DEBUG_TAG, "CustomResponse.headers: " + new Gson().toJson(response.getHeaders()));
 							Log.d(DEBUG_TAG, "CustomResponse.data: " + response.getData());
+							return null;
 						}
-
+					})
+					.addErrorCallback(new Function2<VolleyError, String, Unit>() {
 						@Override
-						public void onResponseError(VolleyError error, String code) {
+						public Unit invoke(VolleyError error, String code) {
 							Log.d(DEBUG_TAG, "Code: " + code + " | VolleyError: " + error);
 							textView.setText(VolleyController.INSTANCE.getMessage(error));
+							return null;
 						}
 					}));
 		} else if (id == R.id.nav_POST) {
@@ -126,17 +132,20 @@ public class MainActivity extends AppCompatActivity
 					.putParam("null", null)
 					.putParam("notNull", "something")
 					.setCode("code_create_posts")
-					.addCallback(new VolleyController.IOCallbacks() {
+					.addSuccessCallback(new Function2<CustomResponse, String, Unit>() {
 						@Override
-						public void onResponse(CustomResponse response, String code) {
+						public Unit invoke(CustomResponse response, String code) {
 							Log.d(DEBUG_TAG, "Code: " + code + " | CustomResponse: " + response);
 							textView.setText(response.getData());
+							return null;
 						}
-
+					})
+					.addErrorCallback(new Function2<VolleyError, String, Unit>() {
 						@Override
-						public void onResponseError(VolleyError error, String code) {
+						public Unit invoke(VolleyError error, String code) {
 							Log.d(DEBUG_TAG, "Code: " + code + " | VolleyError: " + error);
 							textView.setText(VolleyController.INSTANCE.getMessage(error));
+							return null;
 						}
 					}));
 		} else if (id == R.id.nav_PUT) {
@@ -152,36 +161,41 @@ public class MainActivity extends AppCompatActivity
 					.setMethod(InternetCall.Method.PUT)
 					.putParams(params)
 					.setCode("code_modify_post")
-					.addCallback(new VolleyController.IOCallbacks() {
+					.addSuccessCallback(new Function2<CustomResponse, String, Unit>() {
 						@Override
-						public void onResponse(CustomResponse response, String code) {
+						public Unit invoke(CustomResponse response, String code) {
 							Log.d(DEBUG_TAG, "Code: " + code + " | CustomResponse: " + response);
 							textView.setText(response.getData());
-						}
-
-						@Override
-						public void onResponseError(VolleyError error, String code) {
-							Log.d(DEBUG_TAG, "Code: " + code + " | VolleyError: " + error);
-							textView.setText(VolleyController.INSTANCE.getMessage(error));
+							return null;
 						}
 					})
-			);
+					.addErrorCallback(new Function2<VolleyError, String, Unit>() {
+						@Override
+						public Unit invoke(VolleyError error, String code) {
+							Log.d(DEBUG_TAG, "Code: " + code + " | VolleyError: " + error);
+							textView.setText(VolleyController.INSTANCE.getMessage(error));
+							return null;
+						}
+					}));
 		} else if (id == R.id.nav_DELETE) {
 			VolleyController.INSTANCE.onCall(new InternetCall()
 					.setUrl("http://jsonplaceholder.typicode.com/posts/1")
 					.setMethod(InternetCall.Method.DELETE)
 					.setCode("code_delete_post")
-					.addCallback(new VolleyController.IOCallbacks() {
+					.addSuccessCallback(new Function2<CustomResponse, String, Unit>() {
 						@Override
-						public void onResponse(CustomResponse response, String code) {
+						public Unit invoke(CustomResponse response, String code) {
 							Log.d(DEBUG_TAG, "Code: " + code + " | CustomResponse: " + response);
 							textView.setText(response.getData());
+							return null;
 						}
-
+					})
+					.addErrorCallback(new Function2<VolleyError, String, Unit>() {
 						@Override
-						public void onResponseError(VolleyError error, String code) {
+						public Unit invoke(VolleyError error, String code) {
 							Log.d(DEBUG_TAG, "Code: " + code + " | VolleyError: " + error);
 							textView.setText(VolleyController.INSTANCE.getMessage(error));
+							return null;
 						}
 					}));
 		} else if (id == R.id.nav_no_response) {
@@ -189,17 +203,20 @@ public class MainActivity extends AppCompatActivity
 					.setUrl("http://neosalut-quiz-api.pre.tak.es/answer-load/9")
 					.setMethod(InternetCall.Method.GET)
 					.setCode("code_get_no_response")
-					.addCallback(new VolleyController.IOCallbacks() {
+					.addSuccessCallback(new Function2<CustomResponse, String, Unit>() {
 						@Override
-						public void onResponse(CustomResponse response, String code) {
+						public Unit invoke(CustomResponse response, String code) {
 							Log.d(DEBUG_TAG, "Code: " + code + " | CustomResponse: " + response);
 							textView.setText(response.getData());
+							return null;
 						}
-
+					})
+					.addErrorCallback(new Function2<VolleyError, String, Unit>() {
 						@Override
-						public void onResponseError(VolleyError error, String code) {
+						public Unit invoke(VolleyError error, String code) {
 							Log.d(DEBUG_TAG, "Code: " + code + " | VolleyError: " + error);
 							textView.setText(VolleyController.INSTANCE.getMessage(error));
+							return null;
 						}
 					}));
 		} else if (id == R.id.nav_GET_ssl) {
@@ -209,17 +226,20 @@ public class MainActivity extends AppCompatActivity
 					.setCode("code_get_no_response")
 					.putHeader("deviceId", "13")
 					.putHeader("Authorization", "Bearer HIjHZmMgXAWlBM3NuycRFUmf3vR8fPZb0gGAVkiE")
-					.addCallback(new VolleyController.IOCallbacks() {
+					.addSuccessCallback(new Function2<CustomResponse, String, Unit>() {
 						@Override
-						public void onResponse(CustomResponse response, String code) {
+						public Unit invoke(CustomResponse response, String code) {
 							Log.d(DEBUG_TAG, "Code: " + code + " | CustomResponse: " + response);
 							textView.setText(response.getData());
+							return null;
 						}
-
+					})
+					.addErrorCallback(new Function2<VolleyError, String, Unit>() {
 						@Override
-						public void onResponseError(VolleyError error, String code) {
+						public Unit invoke(VolleyError error, String code) {
 							Log.d(DEBUG_TAG, "Code: " + code + " | VolleyError: " + error);
 							textView.setText(VolleyController.INSTANCE.getMessage(error));
+							return null;
 						}
 					}));
 		} else if (id == R.id.nav_GET_activity_destroyed) {
@@ -227,19 +247,20 @@ public class MainActivity extends AppCompatActivity
 					.setUrl("http://playground.byvapps.com/api/search?offset=0&limit=1000000")
 					.setMethod(InternetCall.Method.GET)
 					.setCancelTag(this)
-					.addCallback(new VolleyController.IOCallbacks() {
+					.addSuccessCallback(new Function2<CustomResponse, String, Unit>() {
 						@Override
-						public void onResponse(CustomResponse response, String code) {
-							Log.d(DEBUG_TAG+"."+System.currentTimeMillis(), "Response received");
-							Log.d(DEBUG_TAG, "Code: " + code + " | CustomResponse: " + new Gson().toJson(response));
+						public Unit invoke(CustomResponse response, String code) {
+							Log.d(DEBUG_TAG, "Code: " + code + " | CustomResponse: " + response);
 							textView.setText(response.getData());
-							Log.d(DEBUG_TAG, "CustomResponse.headers: " + new Gson().toJson(response.getHeaders()));
+							return null;
 						}
-
+					})
+					.addErrorCallback(new Function2<VolleyError, String, Unit>() {
 						@Override
-						public void onResponseError(VolleyError error, String code) {
+						public Unit invoke(VolleyError error, String code) {
 							Log.d(DEBUG_TAG, "Code: " + code + " | VolleyError: " + error);
 							textView.setText(VolleyController.INSTANCE.getMessage(error));
+							return null;
 						}
 					}));
 			textView = null;
@@ -250,24 +271,25 @@ public class MainActivity extends AppCompatActivity
 					.setUrl("http://178.62.73.124:3000/api/mirror?id=1&id=2&id=3&offset=0&limit=1000000")
 					.setMethod(InternetCall.Method.GET)
 					.setCancelTag(this)
-					.addCallback(new VolleyController.IOCallbacks() {
+					.addSuccessCallback(new Function2<CustomResponse, String, Unit>() {
 						@Override
-						public void onResponse(CustomResponse response, String code) {
-							Log.d(DEBUG_TAG+"."+System.currentTimeMillis(), "Response received");
-							Log.d(DEBUG_TAG, "Code: " + code + " | CustomResponse: " + new Gson().toJson(response));
+						public Unit invoke(CustomResponse response, String code) {
+							Log.d(DEBUG_TAG, "Code: " + code + " | CustomResponse: " + response);
 							textView.setText(response.getData());
-							Log.d(DEBUG_TAG, "CustomResponse.headers: " + new Gson().toJson(response.getHeaders()));
+							return null;
 						}
-
+					})
+					.addErrorCallback(new Function2<VolleyError, String, Unit>() {
 						@Override
-						public void onResponseError(VolleyError error, String code) {
+						public Unit invoke(VolleyError error, String code) {
 							Log.d(DEBUG_TAG, "Code: " + code + " | VolleyError: " + error);
 							textView.setText(VolleyController.INSTANCE.getMessage(error));
+							return null;
 						}
 					}));
 		}
 
-		DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+		DrawerLayout drawer = findViewById(R.id.drawer_layout);
 		drawer.closeDrawer(GravityCompat.START);
 		return true;
 	}

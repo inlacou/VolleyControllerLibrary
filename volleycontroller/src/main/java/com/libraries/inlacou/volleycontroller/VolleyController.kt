@@ -131,7 +131,7 @@ object VolleyController {
 		}
 	}
 
-	private fun onResponseFinal(response: CustomResponse, successCb: List<((item: Any, code: String) -> Unit)>, errorCb: List<((item: Any, code: String) -> Unit)>, code: String, method: InternetCall.Method, allowLocationRedirect: Boolean) {
+	private fun onResponseFinal(response: CustomResponse, successCb: List<((item: CustomResponse, code: String) -> Unit)>, errorCb: List<((item: VolleyError, code: String) -> Unit)>, code: String, method: InternetCall.Method, allowLocationRedirect: Boolean) {
 		Timber.d("$DEBUG_TAG.$method.onResponseFinal.$code | Method: $method| CustomResponse: $response")
 		response.headers["Location"].let { locationHeader ->
 			if (allowLocationRedirect && locationHeader!=null && !locationHeader.isEmpty()) {
@@ -150,7 +150,7 @@ object VolleyController {
 
 	}
 
-	private fun onResponse(response: CustomResponse, successCb: List<((item: Any, code: String) -> Unit)>, errorCb: List<((item: Any, code: String) -> Unit)>, code: String, method: InternetCall.Method, allowLocationRedirect: Boolean) {
+	private fun onResponse(response: CustomResponse, successCb: List<((item: CustomResponse, code: String) -> Unit)>, errorCb: List<((item: VolleyError, code: String) -> Unit)>, code: String, method: InternetCall.Method, allowLocationRedirect: Boolean) {
 		Timber.d("$DEBUG_TAG.$method.onResponse.$code | CustomResponse: $response")
 		if (code.trim { it <= ' ' }.equals(JSON_POST_UPDATE_ACCESS_TOKEN.trim { it <= ' ' }, ignoreCase = true)) {
 			Timber.d("$DEBUG_TAG.$method.onResponse.$code | Recibida la respuesta al codigo $JSON_POST_UPDATE_ACCESS_TOKEN, updating tokens.")
@@ -186,7 +186,7 @@ object VolleyController {
 						Response.ErrorListener { volleyError -> this@VolleyController.onResponseError(volleyError, iCall.successCallbacks, iCall.errorCallbacks, iCall.code, metodo) }))
 	}
 
-	private fun onResponseError(volleyError: VolleyError, successCb: List<((item: Any, code: String) -> Unit)>, errorCb: List<((item: Any, code: String) -> Unit)>, code: String, metodo: String) {
+	private fun onResponseError(volleyError: VolleyError, successCb: List<((item: CustomResponse, code: String) -> Unit)>, errorCb: List<((item: VolleyError, code: String) -> Unit)>, code: String, metodo: String) {
 		if (volleyError.networkResponse != null) {
 			Timber.w(DEBUG_TAG + "." + metodo + ".onResponseError." + code + "| StatusCode: " + volleyError.networkResponse.statusCode)
 			try {
@@ -227,7 +227,7 @@ object VolleyController {
 		errorCb.forEach { it.invoke(volleyError, code) }
 	}
 
-	private fun retry(code: String?, successCb: List<((item: Any, code: String) -> Unit)>, errorCb: List<((item: Any, code: String) -> Unit)>) {
+	private fun retry(code: String?, successCb: List<((item: CustomResponse, code: String) -> Unit)>, errorCb: List<((item: VolleyError, code: String) -> Unit)>) {
 		Timber.d(DEBUG_TAG + ".retry | En retry, desde una llamada con codigo: " + code + ". Estamos ya refrescando el token? " + if (updatingToken) "Si." else "No.")
 
 		if (!updatingToken) {
@@ -334,7 +334,7 @@ object VolleyController {
 
 		fun setTokens(jsonObject: JSONObject)
 
-		fun doRefreshToken(successCb: List<((item: Any, code: String) -> Unit)>, errorCb: List<((item: Any, code: String) -> Unit)>): InternetCall
+		fun doRefreshToken(successCb: List<((item: CustomResponse, code: String) -> Unit)>, errorCb: List<((item: VolleyError, code: String) -> Unit)>): InternetCall
 
 		fun onRefreshTokenInvalid(volleyError: VolleyError, code: String?)
 

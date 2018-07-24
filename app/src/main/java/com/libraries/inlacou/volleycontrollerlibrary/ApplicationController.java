@@ -2,6 +2,7 @@ package com.libraries.inlacou.volleycontrollerlibrary;
 
 import android.app.Application;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.android.volley.VolleyError;
@@ -16,6 +17,8 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import kotlin.Unit;
+import kotlin.jvm.functions.Function2;
 import timber.log.Timber;
 
 /**
@@ -40,6 +43,11 @@ public class ApplicationController extends Application {
 		Timber.plant(new Timber.DebugTree());
 		
 		VolleyController.INSTANCE.init(this, true, new VolleyController.LogicCallbacks() {
+			@NotNull
+			@Override
+			public InternetCall doRefreshToken(@NotNull List<? extends Function2<? super CustomResponse, ? super String, Unit>> successCb, @NotNull List<? extends Function2<? super VolleyError, ? super String, Unit>> errorCb) {
+				return null;
+			}
 			
 			@Override
 			public void onRefreshTokenExpired(@NotNull VolleyError volleyError, @Nullable String code) {
@@ -49,12 +57,6 @@ public class ApplicationController extends Application {
 			@Override
 			public void onRefreshTokenInvalid(@NotNull VolleyError volleyError, @Nullable String code) {
 			
-			}
-			
-			@NotNull
-			@Override
-			public InternetCall doRefreshToken(@Nullable List<? extends VolleyController.IOCallbacks> ioCallbacks) {
-				return null;
 			}
 			
 			@Override
@@ -104,19 +106,22 @@ public class ApplicationController extends Application {
 				internetCall
 						.putHeader("deviceId", "5")
 						.putParam("alwaysParam", "Hey! :D")
-						.addCallback(new VolleyController.IOCallbacks() {
+						.addSuccessCallback(new Function2<CustomResponse, String, Unit>() {
 							@Override
-							public void onResponse(CustomResponse response, String code) {
+							public Unit invoke(CustomResponse response, String code) {
 								try {
 									Toast.makeText(ApplicationController.this, response.getData().substring(0, 20) + "...", Toast.LENGTH_SHORT).show();
 								}catch (IndexOutOfBoundsException ioobe){
 									Toast.makeText(ApplicationController.this, response.getData().substring(0, response.getData().length()), Toast.LENGTH_SHORT).show();
 								}
+								return null;
 							}
-							
+						})
+						.addErrorCallback(new Function2<VolleyError, String, Unit>() {
 							@Override
-							public void onResponseError(VolleyError error, String code) {
-								
+							public Unit invoke(VolleyError error, String code) {
+								Log.d(DEBUG_TAG, "Code: " + code + " | VolleyError: " + error);
+								return null;
 							}
 						});
 			}

@@ -28,9 +28,9 @@ class InternetCall {
 		private set
 	var file: File? = null
 		private set
-	var successCallbacks: MutableList<((item: Any, code: String) -> Unit)> = mutableListOf()
+	var successCallbacks: MutableList<((response: CustomResponse, code: String) -> Unit)> = mutableListOf()
 		private set
-	var errorCallbacks: MutableList<((item: Any, code: String) -> Unit)> = mutableListOf()
+	var errorCallbacks: MutableList<((error: VolleyError, code: String) -> Unit)> = mutableListOf()
 		private set
 	var fileKey: String? = null
 		private set
@@ -70,12 +70,12 @@ class InternetCall {
 		return this
 	}
 
-	fun addSuccessCallback(callback: ((item: Any, code: String) -> Unit)): InternetCall {
+	fun addSuccessCallback(callback: ((item: CustomResponse, code: String) -> Unit)): InternetCall {
 		this.successCallbacks.add(callback)
 		return this
 	}
 
-	fun addErrorCallback(callback: ((item: Any, code: String) -> Unit)): InternetCall {
+	fun addErrorCallback(callback: ((error: VolleyError, code: String) -> Unit)): InternetCall {
 		this.errorCallbacks.add(callback)
 		return this
 	}

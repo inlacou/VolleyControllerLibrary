@@ -13,9 +13,9 @@ public class File {
 	private String location, format, name;
 	private Type type;
 
-	public File(Context context, String location, String format, String name, Type type) throws IOException {
+	public File(String location, String format, String name, Type type) throws IOException {
 		this.location = location;
-		ImageUtils.getFileDataFromBitmap(context, ImageUtils.getBitmapFromPath(getLocation()));
+		ImageUtils.getFileDataFromBitmap(ImageUtils.getBitmapFromPath(getLocation()));
 		this.format = format;
 		this.name = name;
 		this.type = type;

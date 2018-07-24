@@ -32,6 +32,7 @@ dependencies {
 	testImplementation 'junit:junit:4.12'
 	implementation project(':volleycontroller')
 	implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+	implementation 'com.jakewharton.timber:timber:4.6.0' //Better logging
 }
 repositories {
 	mavenCentral()

@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import timber.log.Timber;
@@ -188,7 +189,7 @@ public class VolleyController {
 		}
 	}
 
-	private void onResponseFinal(CustomResponse response, ArrayList<IOCallbacks> ioCallbacks, String code, InternetCall.Method method, boolean allowLocationRedirect){
+	private void onResponseFinal(CustomResponse response, List<IOCallbacks> ioCallbacks, String code, InternetCall.Method method, boolean allowLocationRedirect){
 		Timber.d(DEBUG_TAG+"."+method+".onResponseFinal." + code + " | Method: " + method + "| CustomResponse: " + response);
 		if(allowLocationRedirect && response.getHeaders().containsKey("Location") &&
 				response.getHeaders().get("Location")!=null &&
@@ -213,7 +214,7 @@ public class VolleyController {
 		}
 	}
 
-	private void onResponse(CustomResponse response, ArrayList<IOCallbacks> ioCallbacks, String code, InternetCall.Method method, boolean allowLocationRedirect){
+	private void onResponse(CustomResponse response, List<IOCallbacks> ioCallbacks, String code, InternetCall.Method method, boolean allowLocationRedirect){
 		Timber.d(DEBUG_TAG+"."+method+".onResponse." + code + " | CustomResponse: " + response);
 		if(code!=null && code.trim().equalsIgnoreCase(JSON_POST_UPDATE_ACCESS_TOKEN.trim())){
 			Timber.d(DEBUG_TAG+"."+method+".onResponse." + code + " | Recibida la respuesta al codigo " + JSON_POST_UPDATE_ACCESS_TOKEN + ", updating tokens.");
@@ -258,7 +259,7 @@ public class VolleyController {
 				}));
 	}
 
-	private void onResponseError(VolleyError volleyError, ArrayList<IOCallbacks> ioCallbacks, String code, String metodo){
+	private void onResponseError(VolleyError volleyError, List<IOCallbacks> ioCallbacks, String code, String metodo){
 		if(volleyError.networkResponse!=null){
 			Timber.w(DEBUG_TAG+"."+metodo+".onResponseError." + code + "| StatusCode: " + volleyError.networkResponse.statusCode);
 			try {
@@ -294,7 +295,7 @@ public class VolleyController {
 		}
 	}
 
-	private void retry(String code, ArrayList<IOCallbacks> ioCallbacks) {
+	private void retry(String code, List<IOCallbacks> ioCallbacks) {
 		Timber.d(DEBUG_TAG + ".retry | En retry, desde una llamada con codigo: " + code + ". Estamos ya refrescando el token? " + (updatingToken ? "Si." : "No."));
 
 		if(!updatingToken) {
@@ -442,7 +443,7 @@ public class VolleyController {
 
 		String getAuthToken();
 
-		InternetCall doRefreshToken(ArrayList<IOCallbacks> ioCallbacks);
+		InternetCall doRefreshToken(List<IOCallbacks> ioCallbacks);
 
 		void onRefreshTokenInvalid(VolleyError volleyError, String code);
 

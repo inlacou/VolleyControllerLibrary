@@ -23,9 +23,4 @@ public class CustomRequest extends Request {
 	protected void deliverResponse(Object response) {
 		//Do nothing, we will override it
 	}
-
-	@Override
-	public int compareTo(Object o) {
-		return 0;
-	}
 }

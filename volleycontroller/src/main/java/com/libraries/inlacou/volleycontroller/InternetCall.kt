@@ -108,15 +108,8 @@ class InternetCall {
 		return this
 	}
 
-	fun prebuild(): InternetCall {
-		headers.clear()
-		params.clear()
-		rawBody = ""
-		interceptors.forEach { it.intercept(this) }
-		return this
-	}
-
 	fun build(listener: com.android.volley.Response.Listener<CustomResponse>, errorListener: com.android.volley.Response.ErrorListener): Request<*> {
+		interceptors.forEach { it.intercept(this) }
 		if (file == null) {
 			val request = object : CustomRequest(this.method.value(), url, errorListener) {
 				override fun deliverResponse(response: Any) {

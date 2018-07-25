@@ -179,8 +179,7 @@ object VolleyController {
 	}
 
 	private fun doCallReplaceTokens(iCall: InternetCall, oldAccessToken: String, accessToken: String, metodo: String) {
-		requestQueue.add(iCall.replaceAccessToken(oldAccessToken, accessToken)
-				.prebuild().build(
+		requestQueue.add(iCall.replaceAccessToken(oldAccessToken, accessToken).build(
 						Response.Listener { s -> this@VolleyController.onResponseFinal(s, iCall.successCallbacks, iCall.errorCallbacks, iCall.code, iCall.method, iCall.allowLocationRedirect) },
 						Response.ErrorListener { volleyError -> this@VolleyController.onResponseError(volleyError, iCall.successCallbacks, iCall.errorCallbacks, iCall.code, metodo) }))
 	}

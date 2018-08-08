@@ -11,6 +11,7 @@ import com.android.volley.Response;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -257,15 +258,20 @@ public class InternetCall {
 
 				@Override
 				protected Map<String, DataPart> getByteData() {
-					Map<String, DataPart> params = new HashMap<>();
-					// file name could found file base or direct access from real path
-					// for now just get bitmap data from ImageView
+					Map<String, DataPart> byteData = new HashMap<>();
+
 					try {
-						params.put(fileKey, new DataPart(file.getName()+"."+file.getFormat(), ImageUtils.getFileDataFromBitmap(context, ImageUtils.getBitmapFromPath(file.getLocation())), file.getType().toString()+"/"+file.getFormat()));
+						byteData.put(fileKey, new DataPart(file.getName()+"."+file.getFormat(), ImageUtils.getFileDataFromBitmap(context, ImageUtils.getBitmapFromPath(file.getLocation())), file.getType().toString()+"/"+file.getFormat()));
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
-					return params;
+					
+					//Print byteData
+					for (Map.Entry<String, DataPart> entry : byteData.entrySet()) {
+						Log.v(DEBUG_TAG + "." + InternetCall.this.getMethod(), "byteData -> " + entry.getKey() + ": " + entry.getValue().getFileName() + " -> " + entry.getValue().getType() + " -> " + Arrays.toString(entry.getValue().getContent()));
+					}
+					
+					return byteData;
 				}
 			};
 			request.setRetryPolicy(retryPolicy);

@@ -18,7 +18,7 @@ class CustomResponse(response: NetworkResponse) {
 	var data: String? = null
 		private set
 	val networkTimeMs: Long
-	val chacheHeaders: Cache.Entry
+	val chacheHeaders: Cache.Entry?
 	var code: String? = null
 
 	init {
@@ -28,7 +28,7 @@ class CustomResponse(response: NetworkResponse) {
 			e.printStackTrace()
 		}
 		chacheHeaders = HttpHeaderParser.parseCacheHeaders(response)
-		headers = response.headers
+		headers = response.headers ?: mapOf()
 		networkTimeMs = response.networkTimeMs
 		isNotModified = response.notModified
 		statusCode = response.statusCode

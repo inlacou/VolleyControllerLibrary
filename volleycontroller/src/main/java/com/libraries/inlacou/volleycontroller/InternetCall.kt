@@ -165,16 +165,18 @@ class InternetCall {
 				}
 
 				override fun getByteData(): Map<String, DataPart>? {
-					val params = mutableMapOf<String, DataPart>()
+					val byteData = mutableMapOf<String, DataPart>()
 					// file name could found file base or direct access from real path
 					// for now just get bitmap data from ImageView
 					try {
-						fileKey?.let { params[it] = DataPart(file?.name + "." + file?.format, ImageUtils.getFileDataFromBitmap(ImageUtils.getBitmapFromPath(file?.location)), file?.type.toString() + "/" + file?.format) }
+						fileKey?.let { byteData[it] = DataPart(file?.name + "." + file?.format, ImageUtils.getFileDataFromBitmap(ImageUtils.getBitmapFromPath(file?.location)), file?.type.toString() + "/" + file?.format) }
 					} catch (e: IOException) {
 						e.printStackTrace()
 					}
 
-					return params
+					byteData.forEach { Log.v(DEBUG_TAG + "." + this@InternetCall.method , " byteData -> ${it.key}: ${it.value}") }
+
+					return byteData
 				}
 			}
 			request.retryPolicy = retryPolicy

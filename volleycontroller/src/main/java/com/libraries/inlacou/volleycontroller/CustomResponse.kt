@@ -15,17 +15,17 @@ class CustomResponse(response: NetworkResponse) {
 	val statusCode: Int
 	val isNotModified: Boolean
 	val headers: Map<String, String>
-	var data: String? = null
-		private set
+	val data: String?
 	val networkTimeMs: Long
 	val chacheHeaders: Cache.Entry?
 	var code: String? = null
 
 	init {
-		try {
-			data = String(response.data, Charset.forName(VolleyController.logicCallbacks.charset))
+		data = try {
+			String(response.data, Charset.forName(VolleyController.logicCallbacks.charset))
 		} catch (e: UnsupportedEncodingException) {
 			e.printStackTrace()
+			null
 		}
 		chacheHeaders = HttpHeaderParser.parseCacheHeaders(response)
 		headers = response.headers ?: mapOf()

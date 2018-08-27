@@ -36,12 +36,12 @@ object VolleyController {
 		this.logicCallbacks = logicCallbacks
 
 		//InputStream keystore = getResources().openRawResource(R.raw.boletus); //For SSH
-		requestQueue = Volley.newRequestQueue(application, CustomHurlStack()
+		requestQueue = Volley.newRequestQueue(application//, CustomHurlStack()
 				//, new ExtHttpClientStack(new SslHttpClient(keystore, "ss64kdn4", 443)) //For SSH
 		)
 
 		//InputStream keystore = getResources().openRawResource(R.raw.boletus); //For SSH
-		secondaryRequestQueue = Volley.newRequestQueue(application, CustomHurlStack()
+		secondaryRequestQueue = Volley.newRequestQueue(application//, CustomHurlStack()
 				//, new ExtHttpClientStack(new SslHttpClient(keystore, "ss64kdn4", 443)) //For SSH
 		)
 	}

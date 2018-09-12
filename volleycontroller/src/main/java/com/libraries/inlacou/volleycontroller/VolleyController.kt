@@ -187,6 +187,14 @@ object VolleyController {
 	private fun onResponseError(volleyError: VolleyError, successCb: List<((item: CustomResponse, code: String) -> Unit)>, errorCb: List<((item: VolleyError, code: String) -> Unit)>, code: String, metodo: String) {
 		if (volleyError.networkResponse != null) {
 			Timber.w(DEBUG_TAG + "." + metodo + ".onResponseError." + code + "| StatusCode: " + volleyError.networkResponse.statusCode)
+			if (code.trim { it <= ' ' }.equals(JSON_POST_UPDATE_ACCESS_TOKEN.trim { it <= ' ' }, ignoreCase = true)) {
+				Timber.d("$DEBUG_TAG.$metodo.onResponseError.$code | Recibida la respuesta al codigo $JSON_POST_UPDATE_ACCESS_TOKEN, updating tokens.")
+				//There was an error updating access token
+				updatingToken = false
+				//Restart queue, but do not retry calls
+				requestQueue.start()
+			}
+
 			try {
 				Timber.w(DEBUG_TAG + "." + metodo + ".onResponseError." + code + " | Message: " + String(volleyError.networkResponse.data, Charset.forName(logicCallbacks.charset)))
 				if (volleyError.networkResponse.statusCode == 401) {
@@ -205,8 +213,9 @@ object VolleyController {
 										|| jsonObject.toString().contains("UnauthorizedError: jwt expired")
 										|| (authTokenExpiredMessage!=null
 												&& authTokenExpiredMessage.isNotEmpty()
-												&& jsonObject.toString().contains(authTokenExpiredMessage
-										))) {
+												&& jsonObject.toString().contains(authTokenExpiredMessage)
+											)
+										) {
 									retry(code, successCb, errorCb)
 									return
 								}

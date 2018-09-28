@@ -1,12 +1,12 @@
 package com.libraries.inlacou.volleycontroller
 
 import android.net.Uri
+import android.text.TextUtils.replace
 import android.util.Log
 import com.android.volley.*
 import com.libraries.inlacou.volleycontroller.multipart.DataPart
 import com.libraries.inlacou.volleycontroller.multipart.VolleyMultipartRequest
 import java.io.IOException
-import java.io.UnsupportedEncodingException
 import java.net.URLEncoder
 
 /**
@@ -46,16 +46,9 @@ class InternetCall {
 		setRetryPolicy(DefaultRetryPolicy(10000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT))
 	}
 
-	@JvmOverloads
-	fun setUrl(url: String, urlEncode: Boolean = true, encoder: String = "UTF-8"): InternetCall {
-		this.url = if(urlEncode){
-			try {
-				val protocol = if(url.startsWith("https")) "https" else "http"
-				val tempUrl = if(protocol=="https") url.substring(8, url.length) else url.substring(7, url.length)
-				protocol + "://" + URLEncoder.encode(tempUrl, encoder).replace("+", "%20")
-			}catch (e: UnsupportedEncodingException){
-				url
-			}
+	fun setUrl(url: String, urlEncodeSpaces: Boolean = true): InternetCall {
+		this.url = if(urlEncodeSpaces){
+			url.replace(" ", "%20")
 		}else{
 			url
 		}

@@ -50,7 +50,9 @@ class InternetCall {
 	fun setUrl(url: String, urlEncode: Boolean = true, encoder: String = "UTF-8"): InternetCall {
 		this.url = if(urlEncode){
 			try {
-				URLEncoder.encode(url, encoder).replace("+", "%20")
+				val protocol = if(url.startsWith("https")) "https" else "http"
+				val tempUrl = if(protocol=="https") url.substring(8, url.length) else url.substring(7, url.length)
+				protocol + "://" + URLEncoder.encode(tempUrl, encoder).replace("+", "%20")
 			}catch (e: UnsupportedEncodingException){
 				url
 			}

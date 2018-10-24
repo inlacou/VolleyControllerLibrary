@@ -7,7 +7,6 @@ import com.android.volley.Response;
 /**
  * Created by inlacou on 17/11/16.
  */
-
 public class CustomRequest extends Request {
 
 	public CustomRequest(int method, String url, Response.ErrorListener listener) {

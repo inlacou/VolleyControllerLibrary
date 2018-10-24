@@ -11,7 +11,6 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 public class NukeSSLCerts {
-    protected static final String TAG = "NukeSSLCerts";
 
     public static void nuke() {
         try {

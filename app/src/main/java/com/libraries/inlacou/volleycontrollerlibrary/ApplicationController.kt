@@ -5,12 +5,11 @@ import android.util.Log
 import android.widget.Toast
 
 import com.android.volley.VolleyError
-import com.libraries.inlacou.volleycontroller.CustomResponse
 import com.libraries.inlacou.volleycontroller.InternetCall
+import com.libraries.inlacou.volleycontroller.VcResponse
 import com.libraries.inlacou.volleycontroller.VolleyController
 import org.json.JSONObject
 
-import java.util.ArrayList
 import timber.log.Timber
 
 /**
@@ -50,7 +49,7 @@ class ApplicationController : Application() {
 			override val refreshToken: String
 				get() = "refreshtoken"
 
-			override fun doRefreshToken(successCb: List<Function2<CustomResponse, String, Unit>>, errorCb: List<Function2<VolleyError, String, Unit>>): InternetCall {
+			override fun doRefreshToken(successCb: List<Function2<VcResponse, String, Unit>>, errorCb: List<Function2<VolleyError, String, Unit>>): InternetCall {
 				return InternetCall()
 			}
 
@@ -77,20 +76,12 @@ class ApplicationController : Application() {
 							} catch (ioobe: IndexOutOfBoundsException) {
 								Toast.makeText(this@ApplicationController, response.data!!.substring(0, response.data!!.length), Toast.LENGTH_SHORT).show()
 							}
-
-							null
-						}
-						.addErrorCallback { error, code ->
-							Log.d(DEBUG_TAG, "Code: $code | VolleyError: $error")
-							null
 						}
 			}
 		})
 	}
 
 	companion object {
-
-		private val DEBUG_TAG = ApplicationController::class.java.name
 		val instance = ApplicationController()
 	}
 }

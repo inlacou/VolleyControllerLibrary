@@ -1,16 +1,15 @@
 package com.libraries.inlacou.volleycontroller
 
-import android.net.Uri
-import android.text.TextUtils.replace
-import android.util.Log
 import com.android.volley.*
+import com.android.volley.Response.success
 import com.libraries.inlacou.volleycontroller.multipart.DataPart
 import com.libraries.inlacou.volleycontroller.multipart.VolleyMultipartRequest
+import timber.log.Timber
 import java.io.IOException
-import java.net.URLEncoder
 
 /**
  * Created by inlacou on 10/09/14.
+ * Last updated by inlacou on 24/10/18.
  */
 class InternetCall {
 	var method: Method = Method.GET
@@ -19,23 +18,23 @@ class InternetCall {
 		private set
 	var url: String? = null
 		private set
-	var params: MutableMap<String, String> = mutableMapOf()
-		private set
 	var headers: MutableMap<String, String> = mutableMapOf()
 		private set
+	var params: MutableMap<String, String> = mutableMapOf()
+		private set
 	var rawBody: String = ""
+		private set
+	var fileKey: String? = null
+		private set
+	var file: File? = null
 		private set
 	var retryPolicy: DefaultRetryPolicy? = null
 		private set
 	var interceptors: MutableList<Interceptor> = mutableListOf()
 		private set
-	var file: File? = null
-		private set
-	var successCallbacks: MutableList<((response: CustomResponse, code: String) -> Unit)> = mutableListOf()
+	var successCallbacks: MutableList<((response: VcResponse, code: String) -> Unit)> = mutableListOf()
 		private set
 	var errorCallbacks: MutableList<((error: VolleyError, code: String) -> Unit)> = mutableListOf()
-		private set
-	var fileKey: String? = null
 		private set
 	var cancelTag: Any? = null
 		private set
@@ -77,7 +76,7 @@ class InternetCall {
 		return this
 	}
 
-	fun addSuccessCallback(callback: ((item: CustomResponse, code: String) -> Unit)): InternetCall {
+	fun addSuccessCallback(callback: ((item: VcResponse, code: String) -> Unit)): InternetCall {
 		this.successCallbacks.add(callback)
 		return this
 	}
@@ -115,36 +114,40 @@ class InternetCall {
 		return this
 	}
 
-	fun build(listener: com.android.volley.Response.Listener<CustomResponse>, errorListener: com.android.volley.Response.ErrorListener): Request<*> {
+	/**
+	 * Applies any interceptor present
+	 * Should be called before build()
+	 */
+	fun applyInterceptors(){
 		interceptors.forEach { it.intercept(this) }
+	}
+
+	fun build(listener: Response.Listener<VcResponse>, errorListener: Response.ErrorListener): Request<*> {
 		if (file == null) {
 			val request = object : CustomRequest(this.method.value(), url, errorListener) {
 				override fun deliverResponse(response: Any) {
-					listener.onResponse(response as CustomResponse)
+					listener.onResponse(response as VcResponse)
 				}
 
-				override fun parseNetworkResponse(response: NetworkResponse): Response<CustomResponse> {
-					val newCustomResponse = CustomResponse(response)
+				override fun parseNetworkResponse(response: NetworkResponse): Response<VcResponse> {
+					val newCustomResponse = VcResponse(response)
 					newCustomResponse.code = code
 					//we set here the response (the object received by deliverResponse);
-					return com.android.volley.Response.success(newCustomResponse, newCustomResponse.chacheHeaders)
+					return success(newCustomResponse, newCustomResponse.chacheHeaders)
 				}
 
 				@Throws(AuthFailureError::class)
 				override fun getHeaders(): Map<String, String>? {
-					this@InternetCall.headers.forEach { Log.v(DEBUG_TAG + "." + this@InternetCall.method , " header -> ${it.key}: ${it.value}") }
 					return this@InternetCall.headers
 				}
 
 				override fun getParams(): Map<String, String>? {
-					this@InternetCall.params.forEach { Log.v(DEBUG_TAG + "." + this@InternetCall.method , " params -> ${it.key}: ${it.value}") }
 					return this@InternetCall.params
 				}
 
 				@Throws(AuthFailureError::class)
 				override fun getBody(): ByteArray {
 					val body = this@InternetCall.rawBody
-					Log.v(DEBUG_TAG + "." + this@InternetCall.method, "body -> $body")
 					if (body.isNotEmpty()) {
 						return body.toByteArray()
 					}
@@ -157,14 +160,14 @@ class InternetCall {
 		} else {
 			val request = object : VolleyMultipartRequest(this.method.value(), url, errorListener) {
 				override fun deliverResponse(response: Any) {
-					listener.onResponse(response as CustomResponse)
+					listener.onResponse(response as VcResponse)
 				}
 
-				override fun parseNetworkResponse(response: NetworkResponse): Response<CustomResponse> {
-					val newCustomResponse = CustomResponse(response)
+				override fun parseNetworkResponse(response: NetworkResponse): Response<VcResponse> {
+					val newCustomResponse = VcResponse(response)
 					newCustomResponse.code = code
 					//we set here the response (the object received by deliverResponse);
-					return com.android.volley.Response.success(newCustomResponse, newCustomResponse.chacheHeaders)
+					return Response.success(newCustomResponse, newCustomResponse.chacheHeaders)
 				}
 
 				override fun getParams(): Map<String, String>? {
@@ -181,7 +184,7 @@ class InternetCall {
 						e.printStackTrace()
 					}
 
-					byteData.forEach { Log.v(DEBUG_TAG + "." + this@InternetCall.method , " byteData -> ${it.key}: ${it.value}") }
+					byteData.forEach { Timber.v("${this@InternetCall.method} byteData -> ${it.key}: ${it.value}") }
 
 					return byteData
 				}
@@ -257,6 +260,21 @@ class InternetCall {
 		return this
 	}
 
+	fun get(){
+		setMethod(Method.GET)
+	}
+
+	fun post(){
+		setMethod(Method.POST)
+	}
+
+	fun put(){
+		setMethod(Method.PUT)
+	}
+
+	fun delete(){
+		setMethod(Method.DELETE)
+	}
 
 	enum class Method {
 		GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS, TRACE;
@@ -288,14 +306,45 @@ class InternetCall {
 		}
 	}
 
+	fun toPostmanString(): String{
+		var result = ""
+
+		result += "Method: $method\n"
+		result += "Code: $code\n"
+		result += "URL: $url\n"
+
+		if(headers.isNotEmpty()){
+			result += "headers:\n"
+			headers.forEach { result += "\t${it.key}: ${it.value}\n" }
+		}else{
+			result += "headers: none\n"
+		}
+
+		if(params.isNotEmpty()){
+			result += "params:\n"
+			params.forEach { result += "\t${it.key}: ${it.value}\n" }
+		}else{
+			result += "params: none\n"
+		}
+
+		if(rawBody.isNotEmpty()) {
+			result += "body:\n"
+			result += rawBody
+		}else{
+			result += "body: none\n"
+		}
+
+		file?.let {
+			result += "file: ${file?.location}\n"
+		}
+
+		return result
+	}
+
 	interface Interceptor {
 		/**
 		 * @param internetCall
 		 */
 		fun intercept(internetCall: InternetCall)
-	}
-
-	companion object {
-		private val DEBUG_TAG = InternetCall::class.java.name
 	}
 }

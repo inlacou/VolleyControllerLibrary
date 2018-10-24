@@ -9,8 +9,9 @@ import java.nio.charset.Charset
 
 /**
  * Created by inlacou on 17/11/16.
+ * Last updated by inlacou on 24/10/18.
  */
-class CustomResponse(response: NetworkResponse) {
+class VcResponse(response: NetworkResponse) {
 
 	val statusCode: Int
 	val isNotModified: Boolean

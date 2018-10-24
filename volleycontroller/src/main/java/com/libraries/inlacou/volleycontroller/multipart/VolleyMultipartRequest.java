@@ -7,7 +7,7 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.HttpHeaderParser;
-import com.libraries.inlacou.volleycontroller.CustomResponse;
+import com.libraries.inlacou.volleycontroller.VcResponse;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -111,7 +111,7 @@ public class VolleyMultipartRequest extends Request {
 	@Override
 	protected Response parseNetworkResponse(NetworkResponse response) {
 		try {
-			CustomResponse customResponse = new CustomResponse(response);
+			VcResponse customResponse = new VcResponse(response);
 			return Response.success(
 					customResponse,
 					HttpHeaderParser.parseCacheHeaders(response));

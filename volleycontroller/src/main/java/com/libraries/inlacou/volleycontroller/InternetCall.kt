@@ -249,7 +249,7 @@ class InternetCall {
 	}
 
 	fun putParams(params: MutableMap<String, String>): InternetCall {
-		params.clear()
+		this.params.clear()
 		rawBody = ""
 		this.params.putAll(params)
 		return this

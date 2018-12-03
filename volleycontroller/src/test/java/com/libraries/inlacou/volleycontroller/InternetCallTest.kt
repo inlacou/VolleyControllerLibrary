@@ -20,4 +20,26 @@ class InternetCallTest {
 		call.setUrl("https://bigshowi-api-pre.herokuapp.com/api/vehiculos/matricula/11 dd", false)
 		Assert.assertEquals("https://bigshowi-api-pre.herokuapp.com/api/vehiculos/matricula/11 dd", call.url)
 	}
+
+	@Test
+	@Throws(Exception::class)
+	fun put_params() {
+		val call = InternetCall()
+		val params = mutableMapOf<String, String>()
+		params["name"] = "Name"
+		params["password"] = "Password"
+		call.putParams(params)
+		Assert.assertEquals("Name", call.params["name"])
+	}
+
+	@Test
+	@Throws(Exception::class)
+	fun set_params() {
+		val call = InternetCall()
+		val params = mutableMapOf<String, String>()
+		params["name"] = "Name"
+		params["password"] = "Password"
+		call.setParams(params)
+		Assert.assertEquals("Name", call.params["name"])
+	}
 }

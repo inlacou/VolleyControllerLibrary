@@ -255,6 +255,12 @@ class InternetCall {
 		return this
 	}
 
+	fun addParams(params: MutableMap<String, String>): InternetCall {
+		rawBody = ""
+		this.params.putAll(params)
+		return this
+	}
+
 	fun setCancelTag(tag: Any): InternetCall {
 		this.cancelTag = tag
 		return this

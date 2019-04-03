@@ -27,6 +27,7 @@ object VolleyController {
 	private var interceptors = mutableListOf<InternetCall.Interceptor>()
 
 	fun init(application: Application, nukeSSLCerts: Boolean, logicCallbacks: LogicCallbacks) {
+		Timber.d("init started")
 		if (nukeSSLCerts) {
 			NukeSSLCerts.nuke()
 		}
@@ -42,6 +43,7 @@ object VolleyController {
 		secondaryRequestQueue = Volley.newRequestQueue(application//, CustomHurlStack()
 				//, new ExtHttpClientStack(new SslHttpClient(keystore, "ss64kdn4", 443)) //For SSH
 		)
+		Timber.d("init finished")
 	}
 
 	/**
@@ -49,6 +51,7 @@ object VolleyController {
 	 * @param interceptor
 	 */
 	fun addInterceptor(interceptor: InternetCall.Interceptor) {
+		Timber.d("new interceptor added")
 		interceptors.add(interceptor)
 	}
 

@@ -32,6 +32,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 		val toolbar = findViewById<Toolbar>(R.id.toolbar)
 		setSupportActionBar(toolbar)
 
+		VolleyController.onCall(InternetCall()
+				.setUrl("https://ws.microcanales.com/allow-access/")
+				.setMethod(InternetCall.Method.GET)
+				.setCancelTag(this)
+				.addSuccessCallback { response, code ->
+					textView?.text = response.data
+				}
+				.addErrorCallback { error, code ->
+					textView?.text = error.errorMessage
+				})
+
 		val fab = findViewById<FloatingActionButton>(R.id.fab)
 		fab.setOnClickListener { view ->
 			Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
@@ -186,6 +197,16 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 			}
 			R.id.nav_GET_mirror -> VolleyController.onCall(InternetCall()
 					.setUrl("http://178.62.73.124:3000/api/mirror?id=1&id=2&id=3&offset=0&limit=1000000")
+					.setMethod(InternetCall.Method.GET)
+					.setCancelTag(this)
+					.addSuccessCallback { response, code ->
+						textView?.text = response.data
+					}
+					.addErrorCallback { error, code ->
+						textView?.text = error.errorMessage
+					})
+			R.id.nav_test -> VolleyController.onCall(InternetCall()
+					.setUrl("https://ws.microcanales.com/allow-access/")
 					.setMethod(InternetCall.Method.GET)
 					.setCancelTag(this)
 					.addSuccessCallback { response, code ->

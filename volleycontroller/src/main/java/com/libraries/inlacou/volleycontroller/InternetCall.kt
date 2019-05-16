@@ -4,6 +4,7 @@ import com.android.volley.*
 import com.android.volley.Response.success
 import com.libraries.inlacou.volleycontroller.multipart.DataPart
 import com.libraries.inlacou.volleycontroller.multipart.VolleyMultipartRequest
+import org.json.JSONObject
 import timber.log.Timber
 import java.io.IOException
 
@@ -62,6 +63,12 @@ class InternetCall {
 
 	fun setRawBody(rawBody: String): InternetCall {
 		this.rawBody = rawBody
+		return this
+	}
+
+	fun setRawBody(json: JSONObject): InternetCall {
+		putHeader("Content-type", VolleyController.ContentType.JSON.toString())
+		this.rawBody = json.toString()
 		return this
 	}
 

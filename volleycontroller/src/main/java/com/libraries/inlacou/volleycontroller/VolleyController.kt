@@ -128,6 +128,7 @@ object VolleyController {
 			for (i in temporaryCallQueue.indices) {
 				doCallReplaceTokens(temporaryCallQueue[i], oldAccessToken, accessToken, method.toString())
 			}
+			Timber.d("$method.onResponse.$code | restarting main requestQueue.")
 			updatingToken = false
 			requestQueue.start()
 		} else {
@@ -143,18 +144,18 @@ object VolleyController {
 	}
 
 	private fun onResponseError(volleyError: VolleyError, successCb: List<((item: VcResponse, code: String) -> Unit)>, errorCb: List<((item: VolleyError, code: String) -> Unit)>, code: String, metodo: String) {
+		if (code.trim { it <= ' ' }.equals(JSON_POST_UPDATE_ACCESS_TOKEN.trim { it <= ' ' }, ignoreCase = true)) {
+			Timber.d("$metodo.onResponseError.$code | Received answer to code $JSON_POST_UPDATE_ACCESS_TOKEN, can't update tokens | restarting main requestQueue")
+			//There was an error updating access token
+			updatingToken = false
+			//Restart queue, but do not retry calls
+			requestQueue.start()
+		}
 		if (volleyError.networkResponse != null) {
 			Timber.w("$metodo.onResponseError.$code" +
 					"\nStatusCode: ${volleyError.networkResponse.statusCode}" +
 					"\nMessage:" +
 					"\n${volleyError.errorMessage}")
-			if (code.trim { it <= ' ' }.equals(JSON_POST_UPDATE_ACCESS_TOKEN.trim { it <= ' ' }, ignoreCase = true)) {
-				Timber.d("$metodo.onResponseError.$code | Recibida la respuesta al codigo $JSON_POST_UPDATE_ACCESS_TOKEN, updating tokens.")
-				//There was an error updating access token
-				updatingToken = false
-				//Restart queue, but do not retry calls
-				requestQueue.start()
-			}
 			if (volleyError.networkResponse.statusCode == 401) {
 				Timber.w("$metodo.onResponseError.$code | Detectado un error 401, UNAUTHORIZED.")
 				val errorMessage = getErrorMsg(volleyError)
@@ -189,7 +190,6 @@ object VolleyController {
 
 	private fun retry(code: String?, successCb: List<((item: VcResponse, code: String) -> Unit)>, errorCb: List<((item: VolleyError, code: String) -> Unit)>) {
 		Timber.d("retry | En retry, desde una llamada con codigo: " + code + ". Estamos ya refrescando el token? " + if (updatingToken) "Si." else "No.")
-
 		if (!updatingToken) {
 			updatingToken = true
 			Timber.d("retry | Paramos la request queue principal y procedemos a refrescar el token")

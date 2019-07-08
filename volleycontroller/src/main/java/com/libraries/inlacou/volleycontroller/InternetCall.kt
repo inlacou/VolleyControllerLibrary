@@ -130,8 +130,8 @@ class InternetCall {
 	}
 
 	fun build(listener: Response.Listener<VcResponse>, errorListener: Response.ErrorListener): Request<*> {
-		if (file == null) {
-			val request = object : CustomRequest(this.method.value(), url, errorListener) {
+		val request: Request<*> = if (file == null) {
+			object : CustomRequest(this.method.value(), url, errorListener) {
 				override fun deliverResponse(response: Any) {
 					listener.onResponse(response as VcResponse)
 				}
@@ -161,11 +161,8 @@ class InternetCall {
 					return super.getBody() ?: "".toByteArray()
 				}
 			}
-			request.retryPolicy = retryPolicy
-			if (cancelTag != null) request.tag = cancelTag
-			return request
 		} else {
-			val request = object : VolleyMultipartRequest(this.method.value(), url, errorListener) {
+			object : VolleyMultipartRequest(this.method.value(), url, errorListener) {
 				override fun deliverResponse(response: Any) {
 					listener.onResponse(response as VcResponse)
 				}
@@ -174,7 +171,7 @@ class InternetCall {
 					val newCustomResponse = VcResponse(response)
 					newCustomResponse.code = code
 					//we set here the response (the object received by deliverResponse);
-					return Response.success(newCustomResponse, newCustomResponse.chacheHeaders)
+					return success(newCustomResponse, newCustomResponse.chacheHeaders)
 				}
 
 				override fun getParams(): Map<String, String>? {
@@ -196,10 +193,10 @@ class InternetCall {
 					return byteData
 				}
 			}
-			request.retryPolicy = retryPolicy
-			if (cancelTag != null) request.tag = cancelTag
-			return request
 		}
+		request.retryPolicy = retryPolicy
+		if (cancelTag != null) request.tag = cancelTag
+		return request
 	}
 
 	fun setRetryPolicy(retryPolicy: DefaultRetryPolicy): InternetCall {

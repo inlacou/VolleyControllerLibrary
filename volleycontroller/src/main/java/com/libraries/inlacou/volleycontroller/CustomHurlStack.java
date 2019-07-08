@@ -13,7 +13,6 @@ package com.libraries.inlacou.volleycontroller;/*
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import com.android.volley.AuthFailureError;
 import com.android.volley.Header;
 import com.android.volley.Request;
@@ -38,7 +37,7 @@ import javax.net.ssl.SSLSocketFactory;
 public class CustomHurlStack extends BaseHttpStack {
 	
 	private static final int HTTP_CONTINUE = 100;
-	
+
 	/** An interface for transforming URLs before use. */
 	public interface UrlRewriter {
 		/**
@@ -56,7 +55,7 @@ public class CustomHurlStack extends BaseHttpStack {
 	}
 	
 	/** @param urlRewriter Rewriter to use for request URLs */
-	public CustomHurlStack(UrlRewriter urlRewriter) {
+	private CustomHurlStack(UrlRewriter urlRewriter) {
 		this(urlRewriter, /* sslSocketFactory = */ null);
 	}
 	
@@ -64,7 +63,7 @@ public class CustomHurlStack extends BaseHttpStack {
 	 * @param urlRewriter Rewriter to use for request URLs
 	 * @param sslSocketFactory SSL factory to use for HTTPS connections
 	 */
-	public CustomHurlStack(UrlRewriter urlRewriter, SSLSocketFactory sslSocketFactory) {
+	private CustomHurlStack(UrlRewriter urlRewriter, SSLSocketFactory sslSocketFactory) {
 		mUrlRewriter = urlRewriter;
 		mSslSocketFactory = sslSocketFactory;
 	}
@@ -118,7 +117,7 @@ public class CustomHurlStack extends BaseHttpStack {
 		}
 	}
 	
-	static List<Header> convertHeaders(Map<String, List<String>> responseHeaders) {
+	private static List<Header> convertHeaders(Map<String, List<String>> responseHeaders) {
 		List<Header> headerList = new ArrayList<>(responseHeaders.size());
 		for (Map.Entry<String, List<String>> entry : responseHeaders.entrySet()) {
 			// HttpUrlConnection includes the status line as a header with a null key; omit it here
@@ -183,7 +182,7 @@ public class CustomHurlStack extends BaseHttpStack {
 	}
 	
 	/** Create an {@link HttpURLConnection} for the specified {@code url}. */
-	protected HttpURLConnection createConnection(URL url) throws IOException {
+	private HttpURLConnection createConnection(URL url) throws IOException {
 		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 		
 		// Workaround for the M release HttpURLConnection not observing the
@@ -219,7 +218,7 @@ public class CustomHurlStack extends BaseHttpStack {
 	}
 	
 	@SuppressWarnings("deprecation")
-	/* package */ static void setConnectionParametersForRequest(
+	/* package */ private static void setConnectionParametersForRequest(
 			HttpURLConnection connection, Request<?> request) throws IOException, AuthFailureError {
 		switch (request.getMethod()) {
 			case Method.DEPRECATED_GET_OR_POST:

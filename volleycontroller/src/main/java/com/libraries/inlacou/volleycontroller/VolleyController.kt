@@ -183,7 +183,7 @@ object VolleyController {
 				}
 			}
 		} else {
-			Timber.w("$metodo.onResponseError.$code networkResponse==null")
+			Timber.w("$metodo.onResponseError.$code networkResponse==null | volleyError.message: ${volleyError.message}")
 		}
 		errorCb.forEach { it.invoke(volleyError, code) }
 	}

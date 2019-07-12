@@ -29,7 +29,7 @@ class ApplicationController : Application() {
 		Log.e("DATA", "data.isEmpty()==false: ${data?.isEmpty()==false}")
 		Log.e("DATA", "data.isEmpty()==null: ${data?.isEmpty()==null}")
 
-		VolleyController.init(this, true, object : VolleyController.LogicCallbacks {
+		VolleyController.init(application = this, logicCallbacks = object : VolleyController.LogicCallbacks {
 
 			override val charset: String
 				get() = VolleyController.CharSetNames.UTF_8.toString()
@@ -64,12 +64,11 @@ class ApplicationController : Application() {
 			override fun setTokens(jsonObject: JSONObject) {
 
 			}
-		})
+		}, nukeSSLCerts = false)
 		VolleyController.addInterceptor(object : InternetCall.Interceptor {
 			override fun intercept(internetCall: InternetCall) {
 				internetCall
 						.putHeader("deviceId", "5")
-						.putParam("alwaysParam", "Hey! :D")
 						.addSuccessCallback { response, code ->
 							try {
 								Toast.makeText(this@ApplicationController, response.data!!.substring(0, 20) + "...", Toast.LENGTH_SHORT).show()

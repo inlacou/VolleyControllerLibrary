@@ -19,6 +19,7 @@ import com.google.gson.Gson
 import com.libraries.inlacou.volleycontroller.InternetCall
 import com.libraries.inlacou.volleycontroller.VolleyController
 import com.libraries.inlacou.volleycontroller.errorMessage
+import org.json.JSONObject
 import timber.log.Timber
 
 import java.util.HashMap
@@ -31,7 +32,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 		setContentView(R.layout.activity_main)
 		val toolbar = findViewById<Toolbar>(R.id.toolbar)
 		setSupportActionBar(toolbar)
-
+		
+		ApplicationController.instance
+		
 		VolleyController.onCall(InternetCall()
 				.setUrl("https://ws.microcanales.com/allow-access/")
 				.setMethod(InternetCall.Method.GET)
@@ -42,12 +45,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 				.addErrorCallback { error, code ->
 					textView?.text = error.errorMessage
 				})
-
-		val fab = findViewById<FloatingActionButton>(R.id.fab)
-		fab.setOnClickListener { view ->
-			Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-					.setAction("Action", null).show()
-		}
 
 		val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
 		val toggle = ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
@@ -80,7 +77,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 		val id = item.itemId
-
 
 		return if (id == R.id.action_settings) {
 			true
@@ -206,8 +202,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 						textView?.text = error.errorMessage
 					})
 			R.id.nav_test -> VolleyController.onCall(InternetCall()
-					.setUrl("https://ws.microcanales.com/allow-access/")
+					.setUrl("http://10.10.0.221:3000/ping")
 					.setMethod(InternetCall.Method.GET)
+					.setRawBody(JSONObject().apply {
+						put("idTransaccion", "530")
+						put("pinTransaccion", "1234")
+					})
+					.setCode("code-manual-test-call")
 					.setCancelTag(this)
 					.addSuccessCallback { response, code ->
 						textView?.text = response.data

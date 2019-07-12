@@ -235,6 +235,7 @@ public class CustomHurlStack extends BaseHttpStack {
 				// Not necessary to set the request method because connection defaults to GET but
 				// being explicit here.
 				connection.setRequestMethod("GET");
+				addBodyIfExists(connection, request);
 				break;
 			case Method.DELETE:
 				connection.setRequestMethod("DELETE");
@@ -280,8 +281,7 @@ public class CustomHurlStack extends BaseHttpStack {
 		// since this is handled by HttpURLConnection using the size of the prepared
 		// output stream.
 		connection.setDoOutput(true);
-		connection.addRequestProperty(
-				"Content-Type", request.getBodyContentType());
+		connection.addRequestProperty("Content-Type", request.getBodyContentType());
 		DataOutputStream out = new DataOutputStream(connection.getOutputStream());
 		out.write(body);
 		out.close();

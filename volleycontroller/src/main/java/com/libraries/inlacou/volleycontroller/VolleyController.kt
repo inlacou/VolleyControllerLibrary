@@ -47,7 +47,7 @@ object VolleyController {
 	}
 
 	/**
-	 *
+	 * Adds an interceptor. An interceptor modifies every call made. Useful to add authentication headers, for example.
 	 * @param interceptor
 	 */
 	fun addInterceptor(interceptor: InternetCall.Interceptor) {
@@ -56,11 +56,9 @@ object VolleyController {
 	}
 
 	private fun removeFromTemporaryList(code: String?) {
-		val i = temporaryCallQueue.size
-		for (c in 0 until i) {
-			if (temporaryCallQueue[c].code.equals(code!!, ignoreCase = true)) {
-				temporaryCallQueue.removeAt(c)
-				return
+		if(!code.isNullOrEmpty()) {
+			temporaryCallQueue.find { it.code.equals(code, true) }?.let {
+				temporaryCallQueue.remove(it)
 			}
 		}
 	}
@@ -103,7 +101,6 @@ object VolleyController {
 				removeFromTemporaryList(code)
 			}
 		}
-
 	}
 
 	private fun onResponse(response: VcResponse, successCb: List<((item: VcResponse, code: String) -> Unit)>, errorCb: List<((item: VolleyError, code: String) -> Unit)>, code: String, method: InternetCall.Method, allowLocationRedirect: Boolean) {

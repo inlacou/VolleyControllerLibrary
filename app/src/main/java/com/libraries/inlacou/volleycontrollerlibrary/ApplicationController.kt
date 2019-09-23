@@ -67,7 +67,7 @@ class ApplicationController : Application() {
 		}, nukeSSLCerts = false)
 		VolleyController.addInterceptor(object : InternetCall.Interceptor {
 			override fun intercept(internetCall: InternetCall) {
-				internetCall
+				/*internetCall
 						.putHeader("deviceId", "5")
 						.addSuccessCallback { response, code ->
 							try {
@@ -75,7 +75,7 @@ class ApplicationController : Application() {
 							} catch (ioobe: IndexOutOfBoundsException) {
 								Toast.makeText(this@ApplicationController, response.data!!.substring(0, response.data!!.length), Toast.LENGTH_SHORT).show()
 							}
-						}
+						}*/
 			}
 		})
 	}

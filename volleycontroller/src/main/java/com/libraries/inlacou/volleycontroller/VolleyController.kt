@@ -83,12 +83,12 @@ object VolleyController {
 		Timber.d("making call:\n${iCall.toPostmanString()}")
 		mRequestQueue.add(iCall.build(
 				Response.Listener { resp: VcResponse -> this@VolleyController.onResponse(resp, iCall.successCallbacks, iCall.errorCallbacks, iCall.code, iCall.method, iCall.allowLocationRedirect) },
-				Response.ErrorListener { volleyError -> this@VolleyController.onResponseError(volleyError, iCall.successCallbacks, iCall.errorCallbacks, iCall.code, iCall.method.toString()) }))
+				Response.ErrorListener { volleyError -> this@VolleyController.onResponseError(volleyError, iCall.successCallbacks, iCall.errorCallbacks, iCall.code, iCall.method, iCall.allowLocationRedirect) }))
 	}
-
-	private fun onResponseFinal(response: VcResponse, successCb: List<((item: VcResponse, code: String) -> Unit)>, errorCb: List<((item: VolleyError, code: String) -> Unit)>, code: String, method: InternetCall.Method, allowLocationRedirect: Boolean) {
-		response.headers["Location"].let { locationHeader ->
-			if (allowLocationRedirect && locationHeader!=null && !locationHeader.isEmpty()) {
+	
+	private fun handleRedirect(headers: Map<String, String>, successCb: List<((item: VcResponse, code: String) -> Unit)>, errorCb: List<((item: VolleyError, code: String) -> Unit)>, code: String, method: InternetCall.Method, allowLocationRedirect: Boolean): Boolean {
+		return headers["Location"].let { locationHeader ->
+			if (allowLocationRedirect && locationHeader != null && locationHeader.isNotEmpty()) {
 				val call = InternetCall()
 				call.setUrl(locationHeader)
 				call.setMethod(InternetCall.Method.GET)
@@ -96,9 +96,9 @@ object VolleyController {
 				successCb.forEach { call.addSuccessCallback(it) }
 				errorCb.forEach { call.addErrorCallback(it) }
 				onCall(call)
-			} else {
-				successCb.forEach { it.invoke(response, code) }
-				removeFromTemporaryList(code)
+				true
+			}else{
+				false
 			}
 		}
 	}
@@ -120,27 +120,32 @@ object VolleyController {
 
 			//Get new authToken
 			val accessToken = logicCallbacks.authToken
-			Timber.d("$method.onResponse | Continuando las " + temporaryCallQueue.size + " llamadas almacenadas.")
+			Timber.d("$method.onResponse | Continuando las ${temporaryCallQueue.size} llamadas almacenadas.")
 
 			for (i in temporaryCallQueue.indices) {
-				doCallReplaceTokens(temporaryCallQueue[i], oldAccessToken, accessToken, method.toString())
+				doCallReplaceTokens(temporaryCallQueue[i], oldAccessToken, accessToken)
 			}
 			Timber.d("$method.onResponse.$code | restarting main requestQueue.")
 			updatingToken = false
 			requestQueue.start()
 		} else {
-			onResponseFinal(response, successCb, errorCb, code, method, allowLocationRedirect)
+			if (handleRedirect(response.headers, successCb, errorCb, code, method, allowLocationRedirect))
+			else {
+				successCb.forEach { it.invoke(response, code) }
+				removeFromTemporaryList(code)
+			}
 		}
 	}
 
-	private fun doCallReplaceTokens(iCall: InternetCall, oldAccessToken: String, accessToken: String, metodo: String) {
+	private fun doCallReplaceTokens(iCall: InternetCall, oldAccessToken: String, accessToken: String) {
 		iCall.applyInterceptors()
 		requestQueue.add(iCall.replaceAccessToken(oldAccessToken, accessToken).build(
 						Response.Listener { resp: VcResponse -> this@VolleyController.onResponse(resp, iCall.successCallbacks, iCall.errorCallbacks, iCall.code, iCall.method, iCall.allowLocationRedirect) },
-						Response.ErrorListener { volleyError -> this@VolleyController.onResponseError(volleyError, iCall.successCallbacks, iCall.errorCallbacks, iCall.code, metodo) }))
+						Response.ErrorListener { volleyError -> this@VolleyController.onResponseError(volleyError, iCall.successCallbacks, iCall.errorCallbacks, iCall.code, iCall.method, iCall.allowLocationRedirect) }))
 	}
 
-	private fun onResponseError(volleyError: VolleyError, successCb: List<((item: VcResponse, code: String) -> Unit)>, errorCb: List<((item: VolleyError, code: String) -> Unit)>, code: String, metodo: String) {
+	private fun onResponseError(volleyError: VolleyError, successCb: List<((item: VcResponse, code: String) -> Unit)>, errorCb: List<((item: VolleyError, code: String) -> Unit)>, code: String, method: InternetCall.Method, allowLocationRedirect: Boolean) {
+		val metodo = method.name
 		if (code.trim { it <= ' ' }.equals(JSON_POST_UPDATE_ACCESS_TOKEN.trim { it <= ' ' }, ignoreCase = true)) {
 			Timber.d("$metodo.onResponseError.$code | Received answer to code $JSON_POST_UPDATE_ACCESS_TOKEN, can't update tokens | restarting main requestQueue")
 			//There was an error updating access token
@@ -153,7 +158,8 @@ object VolleyController {
 					"\nStatusCode: ${volleyError.networkResponse.statusCode}" +
 					"\nMessage:" +
 					"\n${volleyError.errorMessage}")
-			if (volleyError.networkResponse.statusCode == 401) {
+			if(handleRedirect(volleyError.networkResponse.headers, successCb, errorCb, code, method, allowLocationRedirect))
+			else if (volleyError.networkResponse.statusCode == 401) {
 				Timber.w("$metodo.onResponseError.$code | Detectado un error 401, UNAUTHORIZED.")
 				val errorMessage = getErrorMsg(volleyError)
 				logicCallbacks.refreshTokenInvalidMessage.let { refreshTokenInvalidMessage ->
@@ -186,7 +192,7 @@ object VolleyController {
 	}
 
 	private fun retry(code: String?, successCb: List<((item: VcResponse, code: String) -> Unit)>, errorCb: List<((item: VolleyError, code: String) -> Unit)>) {
-		Timber.d("retry | En retry, desde una llamada con codigo: " + code + ". Estamos ya refrescando el token? " + if (updatingToken) "Si." else "No.")
+		Timber.d("retry | En retry, desde una llamada con codigo: $code. Estamos ya refrescando el token? ${if (updatingToken) "Si." else "No."}")
 		if (!updatingToken) {
 			updatingToken = true
 			Timber.d("retry | Paramos la request queue principal y procedemos a refrescar el token")

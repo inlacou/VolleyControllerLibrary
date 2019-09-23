@@ -21,12 +21,13 @@ import com.libraries.inlacou.volleycontroller.VolleyController
 import com.libraries.inlacou.volleycontroller.errorMessage
 import org.json.JSONObject
 import timber.log.Timber
+import java.nio.charset.Charset
 
 import java.util.HashMap
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 	private var textView: TextView? = null
-
+	
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.activity_main)
@@ -45,18 +46,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 				.addErrorCallback { error, code ->
 					textView?.text = error.errorMessage
 				})
-
+		
 		val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
 		val toggle = ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
 		drawer.setDrawerListener(toggle)
 		toggle.syncState()
-
+		
 		val navigationView = findViewById<NavigationView>(R.id.nav_view)
 		navigationView.setNavigationItemSelectedListener(this)
-
+		
 		textView = findViewById(R.id.textView)
 	}
-
+	
 	override fun onBackPressed() {
 		val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
 		if (drawer.isDrawerOpen(GravityCompat.START)) {
@@ -65,29 +66,29 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 			super.onBackPressed()
 		}
 	}
-
+	
 	override fun onCreateOptionsMenu(menu: Menu): Boolean {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		menuInflater.inflate(R.menu.main, menu)
 		return true
 	}
-
+	
 	override fun onOptionsItemSelected(item: MenuItem): Boolean {
 		// Handle action bar item clicks here. The action bar will
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 		val id = item.itemId
-
+		
 		return if (id == R.id.action_settings) {
 			true
 		} else super.onOptionsItemSelected(item)
-
+		
 	}
-
+	
 	override fun onNavigationItemSelected(item: MenuItem): Boolean {
 		// Handle navigation view item clicks here.
 		val id = item.itemId
-
+		
 		when (id) {
 			R.id.nav_GET -> VolleyController.onCall(InternetCall()
 					.setUrl("https://boiling-castle-90818.herokuapp.com/muscleGroups")
@@ -202,24 +203,42 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 						textView?.text = error.errorMessage
 					})
 			R.id.nav_test -> VolleyController.onCall(InternetCall()
-					.setUrl("http://10.10.0.221:3000/ping")
+					.setUrl("https://odoosearch.irontec.dev/login/")
 					.setMethod(InternetCall.Method.GET)
-					.setRawBody(JSONObject().apply {
-						put("idTransaccion", "530")
-						put("pinTransaccion", "1234")
-					})
 					.setCode("code-manual-test-call")
 					.setCancelTag(this)
 					.addSuccessCallback { response, code ->
-						textView?.text = response.data
+						textView?.text = response.headers.toString() + "\n" + response.data
+						response.headers["Set-Cookie"]?.let {
+							cookie = it.substring(0, it.indexOf(";"))
+						}
 					}
 					.addErrorCallback { error, code ->
-						textView?.text = error.errorMessage
+						val data = String(error.networkResponse.data, Charset.forName("UTF-8"))
+						textView?.text = error.networkResponse.allHeaders.toString() + "\n" + data + "\n" + error.message
+					})
+			R.id.nav_test2 -> VolleyController.onCall(InternetCall()
+					.setUrl("https://odoosearch.irontec.dev/login/")
+					.setMethod(InternetCall.Method.POST)
+					.putHeader("cookie", cookie)
+					.putHeader("content-type", "application/x-www-form-urlencoded")
+					.putParam("user_name", "ilacoume@irontec.com")
+					.putParam("password", "UDHRheGSQ4")
+					.setCode("code-manual-test-call-2")
+					.setCancelTag(this)
+					.addSuccessCallback { response, code ->
+						textView?.text = response.headers.toString() + "\n" + response.data
+					}
+					.addErrorCallback { error, code ->
+						val data = String(error.networkResponse.data, Charset.forName("UTF-8"))
+						textView?.text = error.networkResponse.allHeaders.toString() + "\n" + data + "\n" + error.message
 					})
 		}
-
+		
 		val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
 		drawer.closeDrawer(GravityCompat.START)
 		return true
 	}
+	
+	var cookie = ""
 }

@@ -33,6 +33,8 @@ import java.util.Map;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
 
+import timber.log.Timber;
+
 /** A {@link BaseHttpStack} based on {@link HttpURLConnection}. */
 public class CustomHurlStack extends BaseHttpStack {
 	
@@ -230,23 +232,28 @@ public class CustomHurlStack extends BaseHttpStack {
 					connection.setRequestMethod("POST");
 					addBody(connection, request, postBody);
 				}
+				Timber.d("setRequestMethod DEPRECATED_GET_OR_POST");
 				break;
 			case Method.GET:
 				// Not necessary to set the request method because connection defaults to GET but
 				// being explicit here.
 				connection.setRequestMethod("GET");
-				//addBodyIfExists(connection, request);
+				Timber.d("setRequestMethod GET");
+				addBodyIfExists(connection, request);
 				break;
 			case Method.DELETE:
 				connection.setRequestMethod("DELETE");
+				Timber.d("setRequestMethod DELETE");
 				addBodyIfExists(connection, request);
 				break;
 			case Method.POST:
 				connection.setRequestMethod("POST");
+				Timber.d("setRequestMethod POST");
 				addBodyIfExists(connection, request);
 				break;
 			case Method.PUT:
 				connection.setRequestMethod("PUT");
+				Timber.d("setRequestMethod PUT");
 				addBodyIfExists(connection, request);
 				break;
 			case Method.HEAD:

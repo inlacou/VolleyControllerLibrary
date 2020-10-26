@@ -47,12 +47,10 @@ class InternetCall {
 	}
 
 	fun setUrl(url: String, urlEncodeSpaces: Boolean = true): InternetCall {
-		this.url = if(urlEncodeSpaces){
-			url.replace(" ", "%20")
-		}else{
-			url
+		return this.apply {
+			this.url = if(urlEncodeSpaces) url.replace(" ", "%20")
+			else url
 		}
-		return this
 	}
 
 	fun setFile(key: String, file: File): InternetCall {
@@ -114,7 +112,7 @@ class InternetCall {
 		headers.forEach { if(it.value.contains(oldAccessToken)) headers[it.key] = it.value.replace(oldAccessToken, newAccessToken) }
 		params.forEach { if(it.value.contains(oldAccessToken)) headers[it.key] = it.value.replace(oldAccessToken, newAccessToken) }
 
-		if (!rawBody.isEmpty() && rawBody.contains(oldAccessToken)) {
+		if (rawBody.isNotEmpty() && rawBody.contains(oldAccessToken)) {
 			rawBody = rawBody.replace(oldAccessToken, newAccessToken)
 		}
 
@@ -132,8 +130,8 @@ class InternetCall {
 	fun build(listener: Response.Listener<VcResponse>, errorListener: Response.ErrorListener): Request<*> {
 		val request: Request<*> = if (file == null) {
 			object : CustomRequest(this.method.value(), url, errorListener) {
-				override fun deliverResponse(response: Any) {
-					listener.onResponse(response as VcResponse)
+				override fun deliverResponse(response: VcResponse) {
+					listener.onResponse(response)
 				}
 
 				override fun parseNetworkResponse(response: NetworkResponse): Response<VcResponse> {
@@ -316,21 +314,21 @@ class InternetCall {
 		}
 	}
 
-	fun toPostmanString(): String{
+	fun toPostmanString(): String {
 		var result = ""
 
 		result += "Method: $method\n"
 		result += "Code: $code\n"
 		result += "URL: $url\n"
 
-		if(headers.isNotEmpty()){
+		if(headers.isNotEmpty()) {
 			result += "headers:\n"
 			headers.forEach { result += "\t${it.key}: ${it.value}\n" }
 		}else{
 			result += "headers: none\n"
 		}
 
-		if(params.isNotEmpty()){
+		if(params.isNotEmpty()) {
 			result += "params:\n"
 			params.forEach { result += "\t${it.key}: ${it.value}\n" }
 		}else{

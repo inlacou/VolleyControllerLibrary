@@ -24,10 +24,10 @@ class ApplicationController : Application() {
 
 		val data: String? = null
 
-		Log.e("DATA", "data.isEmpty(): ${data?.isEmpty()}")
-		Log.e("DATA", "data.isEmpty()==true: ${data?.isEmpty()==true}")
-		Log.e("DATA", "data.isEmpty()==false: ${data?.isEmpty()==false}")
-		Log.e("DATA", "data.isEmpty()==null: ${data?.isEmpty()==null}")
+		Timber.e("data.isEmpty(): ${data?.isEmpty()}")
+		Timber.e("data.isEmpty()==true: ${data?.isEmpty()==true}")
+		Timber.e("data.isEmpty()==false: ${data?.isEmpty()==false}")
+		Timber.e("data.isEmpty()==null: ${data?.isEmpty()==null}")
 
 		VolleyController.init(application = this, logicCallbacks = object : VolleyController.LogicCallbacks {
 

@@ -36,18 +36,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 		
 		ApplicationController.instance
 		
-		VolleyController.onCall(InternetCall()
-				.setUrl("https://ws.microcanales.com/allow-access/")
-				.setMethod(InternetCall.Method.GET)
-				.setCancelTag(this)
-				.addSuccessCallback { response, code ->
-					textView?.text = response.data
-				}
-				.addErrorCallback { error, code ->
-					textView?.text = error.errorMessage
-				})
-		
-		val drawer = findViewById<androidx.drawerlayout.widget.DrawerLayout>(R.id.drawer_layout)
+		val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
 		val toggle = ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
 		drawer.setDrawerListener(toggle)
 		toggle.syncState()
@@ -59,7 +48,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 	}
 	
 	override fun onBackPressed() {
-		val drawer = findViewById<androidx.drawerlayout.widget.DrawerLayout>(R.id.drawer_layout)
+		val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
 		if (drawer.isDrawerOpen(GravityCompat.START)) {
 			drawer.closeDrawer(GravityCompat.START)
 		} else {
@@ -77,9 +66,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 		// Handle action bar item clicks here. The action bar will
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
-		val id = item.itemId
-		
-		return if (id == R.id.action_settings) {
+		return if (item.itemId == R.id.action_settings) {
 			true
 		} else super.onOptionsItemSelected(item)
 		
@@ -87,11 +74,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 	
 	override fun onNavigationItemSelected(item: MenuItem): Boolean {
 		// Handle navigation view item clicks here.
-		val id = item.itemId
-		
-		when (id) {
+		when (item.itemId) {
 			R.id.nav_GET -> VolleyController.onCall(InternetCall()
-					.setUrl("https://boiling-castle-90818.herokuapp.com/muscleGroups")
+					.setUrl("https://pokeapi.co/api/v2/pokemon/ditto")
 					.setMethod(InternetCall.Method.GET)
 					.setCode("code")
 					.addSuccessCallback { response, code ->
@@ -235,7 +220,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 					})
 		}
 		
-		val drawer = findViewById<androidx.drawerlayout.widget.DrawerLayout>(R.id.drawer_layout)
+		val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
 		drawer.closeDrawer(GravityCompat.START)
 		return true
 	}

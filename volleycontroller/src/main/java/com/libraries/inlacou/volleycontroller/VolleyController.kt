@@ -70,11 +70,9 @@ object VolleyController {
 	private fun onCall(iCall: InternetCall, primaryRequestQueue: Boolean) {
 		iCall.addInterceptors(interceptors)
 
-		val mRequestQueue: RequestQueue = if (primaryRequestQueue) {
-			requestQueue
-		} else {
-			secondaryRequestQueue
-		}
+		val mRequestQueue: RequestQueue = if (primaryRequestQueue) requestQueue
+		else secondaryRequestQueue
+		
 		if (!iCall.code.equals(JSON_POST_UPDATE_ACCESS_TOKEN, ignoreCase = true)) {
 			temporaryCallQueue.add(iCall)
 		}

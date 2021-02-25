@@ -207,7 +207,8 @@ private constructor(private val mUrlRewriter: UrlRewriter?, private val mSslSock
 					// being explicit here.
 					connection.requestMethod = "GET"
 					Timber.d("setRequestMethod GET")
-					addBodyIfExists(connection, request)
+					//Adding a body makes it a POST for google or PokeApi
+					//addBodyIfExists(connection, request)
 				}
 				Request.Method.DELETE -> {
 					connection.requestMethod = "DELETE"

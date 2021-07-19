@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/VolleyController.iml" filepath="$PROJECT_DIR$/VolleyController.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/VolleyController.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/VolleyController.app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/volleycontroller/VolleyController.volleycontroller.iml" filepath="$PROJECT_DIR$/.idea/modules/volleycontroller/VolleyController.volleycontroller.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/VolleyControllerLibrary.iml" filepath="$PROJECT_DIR$/.idea/modules/VolleyControllerLibrary.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/VolleyControllerLibrary.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/VolleyControllerLibrary.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/volleycontroller/VolleyControllerLibrary.volleycontroller.iml" filepath="$PROJECT_DIR$/.idea/modules/volleycontroller/VolleyControllerLibrary.volleycontroller.iml" />
     </modules>
   </component>
 </project>

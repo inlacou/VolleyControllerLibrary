@@ -28,9 +28,8 @@ object VolleyController {
 
 	fun init(application: Application, nukeSSLCerts: Boolean, logicCallbacks: LogicCallbacks) {
 		Timber.d("init started")
-		if (nukeSSLCerts) {
-			NukeSSLCerts.nuke()
-		}
+		if (nukeSSLCerts) NukeSSLCerts.nuke()
+		
 		this.logicCallbacks = logicCallbacks
 		defaultErrorMessage = application.getString(R.string.network_error)
 
@@ -156,7 +155,7 @@ object VolleyController {
 					"\nStatusCode: ${volleyError.networkResponse.statusCode}" +
 					"\nMessage:" +
 					"\n${volleyError.errorMessage}")
-			if(handleRedirect(volleyError.networkResponse.headers, successCb, errorCb, code, method, allowLocationRedirect))
+			if(volleyError.networkResponse.headers!=null && handleRedirect(volleyError.networkResponse.headers!!, successCb, errorCb, code, method, allowLocationRedirect))
 			else if (volleyError.networkResponse.statusCode == 401) {
 				Timber.w("$metodo.onResponseError.$code | Detectado un error 401, UNAUTHORIZED.")
 				val errorMessage = getErrorMsg(volleyError)

@@ -31,43 +31,22 @@ class ApplicationController : Application() {
 
 		VolleyController.init(application = this, logicCallbacks = object : VolleyController.LogicCallbacks {
 
-			override val charset: String
-				get() = VolleyController.CharSetNames.UTF_8.toString()
-
-			override val authTokenExpiredMessage: String?
-				get() = null
-
-			override val refreshTokenExpiredMessage: String?
-				get() = null
-
-			override val refreshTokenInvalidMessage: String?
-				get() = null
-
-			override val authToken: String
-				get() = "authtoken"
-
-			override val refreshToken: String
-				get() = "refreshtoken"
-
+			override val charset: String get() = VolleyController.CharSetNames.UTF_8.toString()
+			override val authTokenExpiredMessage: String? get() = null
+			override val refreshTokenExpiredMessage: String? get() = null
+			override val refreshTokenInvalidMessage: String? get() = null
+			override val authToken: String get() = "authtoken"
+			override val refreshToken: String get() = "refreshtoken"
 			override fun doRefreshToken(successCb: List<Function2<VcResponse, String, Unit>>, errorCb: List<Function2<VolleyError, String, Unit>>): InternetCall {
 				return InternetCall()
 			}
-
-			override fun onRefreshTokenExpired(volleyError: VolleyError, code: String?) {
-
-			}
-
-			override fun onRefreshTokenInvalid(volleyError: VolleyError, code: String?) {
-
-			}
-
-			override fun setTokens(jsonObject: JSONObject) {
-
-			}
+			override fun onRefreshTokenExpired(volleyError: VolleyError, code: String?) {}
+			override fun onRefreshTokenInvalid(volleyError: VolleyError, code: String?) {}
+			override fun setTokens(jsonObject: JSONObject) {}
 		}, nukeSSLCerts = false)
-		VolleyController.addInterceptor(object : InternetCall.Interceptor {
+		/*VolleyController.addInterceptor(object : InternetCall.Interceptor {
 			override fun intercept(internetCall: InternetCall) {
-				/*internetCall
+				internetCall
 						.putHeader("deviceId", "5")
 						.addSuccessCallback { response, code ->
 							try {
@@ -75,9 +54,9 @@ class ApplicationController : Application() {
 							} catch (ioobe: IndexOutOfBoundsException) {
 								Toast.makeText(this@ApplicationController, response.data!!.substring(0, response.data!!.length), Toast.LENGTH_SHORT).show()
 							}
-						}*/
+						}
 			}
-		})
+		})*/
 	}
 
 	companion object {

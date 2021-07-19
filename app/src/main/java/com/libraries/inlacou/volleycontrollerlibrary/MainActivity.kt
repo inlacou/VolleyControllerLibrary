@@ -76,7 +76,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 		// Handle navigation view item clicks here.
 		when (item.itemId) {
 			R.id.nav_GET -> VolleyController.onCall(InternetCall()
-					.setUrl("https://pokeapi.co/api/v2/pokemon/ditto")
+					.setUrl("http://www.google.com")
 					.setMethod(InternetCall.Method.GET)
 					.setCode("code")
 					.addSuccessCallback { response, code ->

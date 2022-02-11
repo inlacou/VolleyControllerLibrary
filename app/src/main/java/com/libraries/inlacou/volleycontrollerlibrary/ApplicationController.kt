@@ -43,7 +43,7 @@ class ApplicationController : Application() {
 			override fun onRefreshTokenExpired(volleyError: VolleyError, code: String?) {}
 			override fun onRefreshTokenInvalid(volleyError: VolleyError, code: String?) {}
 			override fun setTokens(jsonObject: JSONObject) {}
-		}, nukeSSLCerts = false)
+		}, nukeSSLCerts = false, log = true)
 		/*VolleyController.addInterceptor(object : InternetCall.Interceptor {
 			override fun intercept(internetCall: InternetCall) {
 				internetCall

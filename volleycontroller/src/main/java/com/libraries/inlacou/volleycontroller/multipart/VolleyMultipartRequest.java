@@ -8,6 +8,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.HttpHeaderParser;
 import com.libraries.inlacou.volleycontroller.VcResponse;
+import com.libraries.inlacou.volleycontroller.VolleyController;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -139,7 +140,7 @@ public class VolleyMultipartRequest extends Request {
 	 * @throws IOException
 	 */
 	private void textParse(DataOutputStream dataOutputStream, Map<String, String> params, String encoding) throws IOException {
-		Timber.d(DEBUG_TAG + " textParse");
+		if(VolleyController.log) Timber.d(DEBUG_TAG + " textParse");
 		try {
 			for (Map.Entry<String, String> entry : params.entrySet()) {
 				buildTextPart(dataOutputStream, entry.getKey(), entry.getValue());
@@ -171,7 +172,7 @@ public class VolleyMultipartRequest extends Request {
 	 * @throws IOException
 	 */
 	private void buildTextPart(DataOutputStream dataOutputStream, String parameterName, String parameterValue) throws IOException {
-		Timber.d(DEBUG_TAG + " buildTextPart " + parameterName + " -> " + parameterValue);
+		if(VolleyController.log) Timber.d(DEBUG_TAG + " buildTextPart " + parameterName + " -> " + parameterValue);
 		dataOutputStream.writeBytes(twoHyphens + boundary + lineEnd);
 		dataOutputStream.writeBytes("Content-Disposition: form-data; name=\"" + parameterName + "\"" + lineEnd);
 		//dataOutputStream.writeBytes("Content-Type: text/plain; charset=UTF-8" + lineEnd);

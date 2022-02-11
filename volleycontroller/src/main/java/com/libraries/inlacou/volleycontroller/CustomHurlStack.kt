@@ -188,7 +188,7 @@ private constructor(private val mUrlRewriter: UrlRewriter?, private val mSslSock
 		
 		@Throws(IOException::class, AuthFailureError::class)
 		private fun setConnectionParametersForRequest(connection: HttpURLConnection, request: Request<*>) {
-			Timber.d("setConnectionParametersForRequest: ${request.method}")
+			if(VolleyController.log) Timber.d("setConnectionParametersForRequest: ${request.method}")
 			when (request.method) {
 				Request.Method.DEPRECATED_GET_OR_POST -> {
 					// This is the deprecated way that needs to be handled for backwards compatibility.
@@ -196,33 +196,33 @@ private constructor(private val mUrlRewriter: UrlRewriter?, private val mSslSock
 					// GET.  Otherwise, it is assumed that the request is a POST.
 					val postBody = request.postBody
 					if (postBody != null) {
-						Timber.w("postBody!=null so setting request method to POST")
+						if(VolleyController.log) Timber.w("postBody!=null so setting request method to POST")
 						connection.requestMethod = "POST"
 						addBody(connection, request, postBody)
 					}
-					Timber.d("setRequestMethod DEPRECATED_GET_OR_POST")
+					if(VolleyController.log) Timber.d("setRequestMethod DEPRECATED_GET_OR_POST")
 				}
 				Request.Method.GET -> {
 					// Not necessary to set the request method because connection defaults to GET but
 					// being explicit here.
 					connection.requestMethod = "GET"
-					Timber.d("setRequestMethod GET")
+					if(VolleyController.log) Timber.d("setRequestMethod GET")
 					//Adding a body makes it a POST for google or PokeApi
 					//addBodyIfExists(connection, request)
 				}
 				Request.Method.DELETE -> {
 					connection.requestMethod = "DELETE"
-					Timber.d("setRequestMethod DELETE")
+					if(VolleyController.log) Timber.d("setRequestMethod DELETE")
 					addBodyIfExists(connection, request)
 				}
 				Request.Method.POST -> {
 					connection.requestMethod = "POST"
-					Timber.d("setRequestMethod POST")
+					if(VolleyController.log) Timber.d("setRequestMethod POST")
 					addBodyIfExists(connection, request)
 				}
 				Request.Method.PUT -> {
 					connection.requestMethod = "PUT"
-					Timber.d("setRequestMethod PUT")
+					if(VolleyController.log) Timber.d("setRequestMethod PUT")
 					addBodyIfExists(connection, request)
 				}
 				Request.Method.HEAD -> connection.requestMethod = "HEAD"
@@ -240,7 +240,7 @@ private constructor(private val mUrlRewriter: UrlRewriter?, private val mSslSock
 		private fun addBodyIfExists(connection: HttpURLConnection, request: Request<*>) {
 			val body = request.body ?: byteArrayOf()
 			if (body != null ) {
-				Timber.d("addBodyIfExists | ${body.map { it }}")
+				if(VolleyController.log) Timber.d("addBodyIfExists | ${body.map { it }}")
 				addBody(connection, request, body)
 			}
 		}

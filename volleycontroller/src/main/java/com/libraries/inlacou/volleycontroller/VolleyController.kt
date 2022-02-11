@@ -19,6 +19,8 @@ object VolleyController {
 
 	private val temporaryCallQueue = mutableListOf<InternetCall>()
 	private var updatingToken = false
+	var log = true
+		private set
 
 	private lateinit var requestQueue: RequestQueue
 	private lateinit var secondaryRequestQueue: RequestQueue
@@ -26,8 +28,9 @@ object VolleyController {
 	private lateinit var defaultErrorMessage: String
 	private var interceptors = mutableListOf<InternetCall.Interceptor>()
 
-	fun init(application: Application, nukeSSLCerts: Boolean, logicCallbacks: LogicCallbacks) {
-		Timber.d("init started")
+	fun init(application: Application, log: Boolean, nukeSSLCerts: Boolean, logicCallbacks: LogicCallbacks) {
+		this.log = log
+		if(VolleyController.log) Timber.d("init started")
 		if (nukeSSLCerts) NukeSSLCerts.nuke()
 		
 		this.logicCallbacks = logicCallbacks
@@ -42,7 +45,7 @@ object VolleyController {
 		secondaryRequestQueue = Volley.newRequestQueue(application, CustomHurlStack()
 				//, new ExtHttpClientStack(new SslHttpClient(keystore, "ss64kdn4", 443)) //For SSH
 		)
-		Timber.d("init finished")
+		if(VolleyController.log) Timber.d("init finished")
 	}
 
 	/**
@@ -50,7 +53,7 @@ object VolleyController {
 	 * @param interceptor
 	 */
 	fun addInterceptor(interceptor: InternetCall.Interceptor) {
-		Timber.d("new interceptor added")
+		if(VolleyController.log) Timber.d("new interceptor added")
 		interceptors.add(interceptor)
 	}
 
@@ -77,7 +80,7 @@ object VolleyController {
 		}
 
 		iCall.applyInterceptors()
-		Timber.d("making call:\n${iCall.toPostmanString()}")
+		if(VolleyController.log) Timber.d("making call:\n${iCall.toPostmanString()}")
 		mRequestQueue.add(iCall.build(
 				Response.Listener { resp: VcResponse -> this@VolleyController.onResponse(resp, iCall.successCallbacks, iCall.errorCallbacks, iCall.code, iCall.method, iCall.allowLocationRedirect) },
 				Response.ErrorListener { volleyError -> this@VolleyController.onResponseError(volleyError, iCall.successCallbacks, iCall.errorCallbacks, iCall.code, iCall.method, iCall.allowLocationRedirect) }))
@@ -101,9 +104,9 @@ object VolleyController {
 	}
 
 	private fun onResponse(response: VcResponse, successCb: List<((item: VcResponse, code: String) -> Unit)>, errorCb: List<((item: VolleyError, code: String) -> Unit)>, code: String, method: InternetCall.Method, allowLocationRedirect: Boolean) {
-		Timber.d("$method.onResponse.$code | CustomResponse: $response")
+		if(VolleyController.log) Timber.d("$method.onResponse.$code | CustomResponse: $response")
 		if (code.trim().equals(JSON_POST_UPDATE_ACCESS_TOKEN.trim(), ignoreCase = true)) {
-			Timber.d("$method.onResponse.$code | Recibida la respuesta al codigo $JSON_POST_UPDATE_ACCESS_TOKEN, updating tokens.")
+			if(VolleyController.log) Timber.d("$method.onResponse.$code | Recibida la respuesta al codigo $JSON_POST_UPDATE_ACCESS_TOKEN, updating tokens.")
 			//Save old authToken
 			val oldAccessToken = logicCallbacks.authToken
 			//Read answer
@@ -117,12 +120,12 @@ object VolleyController {
 
 			//Get new authToken
 			val accessToken = logicCallbacks.authToken
-			Timber.d("$method.onResponse | Continuando las ${temporaryCallQueue.size} llamadas almacenadas.")
+			if(VolleyController.log) Timber.d("$method.onResponse | Continuando las ${temporaryCallQueue.size} llamadas almacenadas.")
 
 			for (i in temporaryCallQueue.indices) {
 				doCallReplaceTokens(temporaryCallQueue[i], oldAccessToken, accessToken)
 			}
-			Timber.d("$method.onResponse.$code | restarting main requestQueue.")
+			if(VolleyController.log) Timber.d("$method.onResponse.$code | restarting main requestQueue.")
 			updatingToken = false
 			requestQueue.start()
 		} else {
@@ -144,20 +147,20 @@ object VolleyController {
 	private fun onResponseError(volleyError: VolleyError, successCb: List<((item: VcResponse, code: String) -> Unit)>, errorCb: List<((item: VolleyError, code: String) -> Unit)>, code: String, method: InternetCall.Method, allowLocationRedirect: Boolean) {
 		val metodo = method.name
 		if (code.trim { it <= ' ' }.equals(JSON_POST_UPDATE_ACCESS_TOKEN.trim { it <= ' ' }, ignoreCase = true)) {
-			Timber.d("$metodo.onResponseError.$code | Received answer to code $JSON_POST_UPDATE_ACCESS_TOKEN, can't update tokens | restarting main requestQueue")
+			if(VolleyController.log) Timber.d("$metodo.onResponseError.$code | Received answer to code $JSON_POST_UPDATE_ACCESS_TOKEN, can't update tokens | restarting main requestQueue")
 			//There was an error updating access token
 			updatingToken = false
 			//Restart queue, but do not retry calls
 			requestQueue.start()
 		}
 		if (volleyError.networkResponse != null) {
-			Timber.w("$metodo.onResponseError.$code" +
+			if(VolleyController.log) Timber.w("$metodo.onResponseError.$code" +
 					"\nStatusCode: ${volleyError.networkResponse.statusCode}" +
 					"\nMessage:" +
 					"\n${volleyError.errorMessage}")
 			if(volleyError.networkResponse.headers!=null && handleRedirect(volleyError.networkResponse.headers!!, successCb, errorCb, code, method, allowLocationRedirect))
 			else if (volleyError.networkResponse.statusCode == 401) {
-				Timber.w("$metodo.onResponseError.$code | Detectado un error 401, UNAUTHORIZED.")
+				if(VolleyController.log) Timber.w("$metodo.onResponseError.$code | Detectado un error 401, UNAUTHORIZED.")
 				val errorMessage = getErrorMsg(volleyError)
 				logicCallbacks.refreshTokenInvalidMessage.let { refreshTokenInvalidMessage ->
 					logicCallbacks.refreshTokenExpiredMessage.let { refreshTokenExpiredMessage ->
@@ -189,10 +192,10 @@ object VolleyController {
 	}
 
 	private fun retry(code: String?, successCb: List<((item: VcResponse, code: String) -> Unit)>, errorCb: List<((item: VolleyError, code: String) -> Unit)>) {
-		Timber.d("retry | En retry, desde una llamada con codigo: $code. Estamos ya refrescando el token? ${if (updatingToken) "Si." else "No."}")
+		if(VolleyController.log) Timber.d("retry | En retry, desde una llamada con codigo: $code. Estamos ya refrescando el token? ${if (updatingToken) "Si." else "No."}")
 		if (!updatingToken) {
 			updatingToken = true
-			Timber.d("retry | Paramos la request queue principal y procedemos a refrescar el token")
+			if(VolleyController.log) Timber.d("retry | Paramos la request queue principal y procedemos a refrescar el token")
 			requestQueue.stop()
 			cancelAllPrimaryQueue()
 			onCall(logicCallbacks.doRefreshToken(successCb, errorCb).setCode(JSON_POST_UPDATE_ACCESS_TOKEN), false)

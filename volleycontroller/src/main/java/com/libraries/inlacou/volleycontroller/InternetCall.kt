@@ -160,23 +160,23 @@ class InternetCall {
 				}
 			}
 		} else {
-			object : VolleyMultipartRequest(this.method.value(), url, errorListener) {
-				override fun deliverResponse(response: Any) {
+			object : VolleyMultipartRequest(method.value(), url, errorListener) {
+				override fun deliverResponse(response: Any?) {
 					listener.onResponse(response as VcResponse)
 				}
 
-				override fun parseNetworkResponse(response: NetworkResponse): Response<VcResponse> {
+				override fun parseNetworkResponse(response: NetworkResponse): Response<Any?> {
 					val newCustomResponse = VcResponse(response)
 					newCustomResponse.code = code
 					//we set here the response (the object received by deliverResponse);
 					return success(newCustomResponse, newCustomResponse.chacheHeaders)
 				}
 
-				override fun getParams(): Map<String, String>? {
+				override fun getParams(): Map<String, String> {
 					return this@InternetCall.params
 				}
 
-				override fun getByteData(): Map<String, DataPart>? {
+				override fun getByteData(): Map<String, DataPart> {
 					val byteData = mutableMapOf<String, DataPart>()
 					// file name could found file base or direct access from real path
 					// for now just get bitmap data from ImageView

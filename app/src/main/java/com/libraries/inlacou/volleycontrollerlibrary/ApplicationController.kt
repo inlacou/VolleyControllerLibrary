@@ -1,8 +1,6 @@
 package com.libraries.inlacou.volleycontrollerlibrary
 
 import android.app.Application
-import android.util.Log
-import android.widget.Toast
 
 import com.android.volley.VolleyError
 import com.libraries.inlacou.volleycontroller.InternetCall
@@ -29,7 +27,7 @@ class ApplicationController : Application() {
 		Timber.e("data.isEmpty()==false: ${data?.isEmpty()==false}")
 		Timber.e("data.isEmpty()==null: ${data?.isEmpty()==null}")
 
-		VolleyController.init(application = this, logicCallbacks = object : VolleyController.LogicCallbacks {
+		VolleyController.init(context = this, logicCallbacks = object : VolleyController.LogicCallbacks {
 
 			override val charset: String get() = VolleyController.CharSetNames.UTF_8.toString()
 			override val authTokenExpiredMessage: String? get() = null

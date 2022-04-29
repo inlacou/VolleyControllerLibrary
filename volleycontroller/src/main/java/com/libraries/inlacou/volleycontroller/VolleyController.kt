@@ -1,6 +1,6 @@
 package com.libraries.inlacou.volleycontroller
 
-import android.app.Application
+import android.content.Context
 import com.android.volley.RequestQueue
 import com.android.volley.Response
 import com.android.volley.VolleyError
@@ -28,21 +28,24 @@ object VolleyController {
 	private lateinit var defaultErrorMessage: String
 	private var interceptors = mutableListOf<InternetCall.Interceptor>()
 
-	fun init(application: Application, log: Boolean, nukeSSLCerts: Boolean, logicCallbacks: LogicCallbacks) {
+	/**
+	 * @param context do not worry, it is used only a bit, no memory leak here
+	 */
+	fun init(context: Context, log: Boolean, nukeSSLCerts: Boolean, logicCallbacks: LogicCallbacks) {
 		this.log = log
 		if(VolleyController.log) Timber.d("init started")
 		if (nukeSSLCerts) NukeSSLCerts.nuke()
 		
 		this.logicCallbacks = logicCallbacks
-		defaultErrorMessage = application.getString(R.string.network_error)
+		defaultErrorMessage = context.getString(R.string.network_error)
 
 		//InputStream keystore = getResources().openRawResource(R.raw.boletus); //For SSH
-		requestQueue = Volley.newRequestQueue(application, CustomHurlStack()
+		requestQueue = Volley.newRequestQueue(context, CustomHurlStack()
 				//, new ExtHttpClientStack(new SslHttpClient(keystore, "ss64kdn4", 443)) //For SSH
 		)
 
 		//InputStream keystore = getResources().openRawResource(R.raw.boletus); //For SSH
-		secondaryRequestQueue = Volley.newRequestQueue(application, CustomHurlStack()
+		secondaryRequestQueue = Volley.newRequestQueue(context, CustomHurlStack()
 				//, new ExtHttpClientStack(new SslHttpClient(keystore, "ss64kdn4", 443)) //For SSH
 		)
 		if(VolleyController.log) Timber.d("init finished")

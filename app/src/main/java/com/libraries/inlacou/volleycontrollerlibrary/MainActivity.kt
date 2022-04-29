@@ -76,15 +76,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 		// Handle navigation view item clicks here.
 		when (item.itemId) {
 			R.id.nav_GET -> VolleyController.onCall(InternetCall()
-					.setUrl("http://www.google.com")
+					.setUrl("https://www.google.com")
 					.setMethod(InternetCall.Method.GET)
 					.setCode("code")
-					.addSuccessCallback { response, code ->
-						textView?.text = response.data
-					}
-					.addErrorCallback { error, code ->
-						textView?.text = if(error is NoConnectionError) "No connection error" else error.errorMessage
-					})
+					.addSuccessCallback { response, code -> textView?.text = response.data }
+					.addErrorCallback { error, code -> textView?.text = if(error is NoConnectionError) "No connection error" else error.errorMessage })
 			R.id.nav_POST -> VolleyController.onCall(InternetCall()
 					.setUrl("http://jsonplaceholder.typicode.com/posts")
 					.setMethod(InternetCall.Method.POST)
@@ -94,23 +90,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 					.putParam("null", null)
 					.putParam("notNull", "something")
 					.setCode("code_create_posts")
-					.addSuccessCallback { response, code ->
-						textView?.text = response.data
-					}
-					.addErrorCallback { error, code ->
-						textView?.text = error.errorMessage
-					})
+					.addSuccessCallback { response, code -> textView?.text = response.data }
+					.addErrorCallback { error, code -> textView?.text = error.errorMessage })
 			R.id.nav_POST_2 -> VolleyController.onCall(InternetCall()
 					.setUrl("http://jsonplaceholder.typicode.com/posts")
 					.setMethod(InternetCall.Method.POST)
 					.setRawBody("{ \"title\": \"foo\" }")
 					.setCode("code_create_posts")
-					.addSuccessCallback { response, code ->
-						textView?.text = response.data
-					}
-					.addErrorCallback { error, code ->
-						textView?.text = error.errorMessage
-					})
+					.addSuccessCallback { response, code -> textView?.text = response.data }
+					.addErrorCallback { error, code -> textView?.text = error.errorMessage })
 			R.id.nav_PUT -> {
 				val params = HashMap<String, String>()
 				params["id"] = "1"
@@ -123,56 +111,36 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 						.setMethod(InternetCall.Method.PUT)
 						.putParams(params)
 						.setCode("code_modify_post")
-						.addSuccessCallback { response, code ->
-							textView?.text = response.data
-						}
-						.addErrorCallback { error, code ->
-							textView?.text = error.errorMessage
-						})
+						.addSuccessCallback { response, code -> textView?.text = response.data }
+						.addErrorCallback { error, code -> textView?.text = error.errorMessage })
 			}
 			R.id.nav_DELETE -> VolleyController.onCall(InternetCall()
 					.setUrl("http://jsonplaceholder.typicode.com/posts/1")
 					.setMethod(InternetCall.Method.DELETE)
 					.setCode("code_delete_post")
-					.addSuccessCallback { response, code ->
-						textView?.text = response.data
-					}
-					.addErrorCallback { error, code ->
-						textView?.text = error.errorMessage
-					})
+					.addSuccessCallback { response, code -> textView?.text = response.data }
+					.addErrorCallback { error, code -> textView?.text = error.errorMessage })
 			R.id.nav_no_response -> VolleyController.onCall(InternetCall()
 					.setUrl("http://neosalut-quiz-api.pre.tak.es/answer-load/9")
 					.setMethod(InternetCall.Method.GET)
 					.setCode("code_get_no_response")
-					.addSuccessCallback { response, code ->
-						textView?.text = response.data
-					}
-					.addErrorCallback { error, code ->
-						textView?.text = error.errorMessage
-					})
+					.addSuccessCallback { response, code -> textView?.text = response.data }
+					.addErrorCallback { error, code -> textView?.text = error.errorMessage })
 			R.id.nav_GET_ssl -> VolleyController.onCall(InternetCall()
 					.setUrl("https://178.62.73.124:3000/api/profile")
 					.setMethod(InternetCall.Method.GET)
 					.setCode("code_get_no_response")
 					.putHeader("deviceId", "13")
 					.putHeader("Authorization", "Bearer HIjHZmMgXAWlBM3NuycRFUmf3vR8fPZb0gGAVkiE")
-					.addSuccessCallback { response, code ->
-						textView?.text = response.data
-					}
-					.addErrorCallback { error, code ->
-						textView?.text = error.errorMessage
-					})
+					.addSuccessCallback { response, code -> textView?.text = response.data }
+					.addErrorCallback { error, code -> textView?.text = error.errorMessage })
 			R.id.nav_GET_activity_destroyed -> {
 				VolleyController.onCall(InternetCall()
 						.setUrl("http://playground.byvapps.com/api/search?offset=0&limit=1000000")
 						.setMethod(InternetCall.Method.GET)
 						.setCancelTag(this)
-						.addSuccessCallback { response, code ->
-							textView?.text = response.data
-						}
-						.addErrorCallback { error, code ->
-							textView?.text = error.errorMessage
-						})
+						.addSuccessCallback { response, code -> textView?.text = response.data }
+						.addErrorCallback { error, code -> textView?.text = error.errorMessage })
 				textView = null
 				VolleyController.cancelRequest(this)
 				Toast.makeText(this, "Should not give any response. If it gives, it's an app breaking one", Toast.LENGTH_SHORT).show()
@@ -181,12 +149,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 					.setUrl("http://178.62.73.124:3000/api/mirror?id=1&id=2&id=3&offset=0&limit=1000000")
 					.setMethod(InternetCall.Method.GET)
 					.setCancelTag(this)
-					.addSuccessCallback { response, code ->
-						textView?.text = response.data
-					}
-					.addErrorCallback { error, code ->
-						textView?.text = error.errorMessage
-					})
+					.addSuccessCallback { response, code -> textView?.text = response.data }
+					.addErrorCallback { error, code -> textView?.text = error.errorMessage })
 			R.id.nav_test -> VolleyController.onCall(InternetCall()
 					.setUrl("https://odoosearch.irontec.dev/login/")
 					.setMethod(InternetCall.Method.GET)
@@ -211,9 +175,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 					.putParam("password", "UDHRheGSQ4")
 					.setCode("code-manual-test-call-2")
 					.setCancelTag(this)
-					.addSuccessCallback { response, code ->
-						textView?.text = response.headers.toString() + "\n" + response.data
-					}
+					.addSuccessCallback { response, code -> textView?.text = response.headers.toString() + "\n" + response.data }
 					.addErrorCallback { error, code ->
 						val data = String(error.networkResponse.data, Charset.forName("UTF-8"))
 						textView?.text = error.networkResponse.allHeaders.toString() + "\n" + data + "\n" + error.message
